@@ -64,7 +64,18 @@ playhtml.init({
           : n.toLocaleString() + ' plays';
         element.dataset.n = String(n);
       },
-      additionalSetup: ({ element, setData, getData }) => {
+      /* TWO API traps here, both found by testing against the live page rather
+       * than by reading the types:
+       *
+       * 1. It must be `onMount`, NOT `additionalSetup`. playhtml only rewrites
+       *    additionalSetup -> onMount on the inline `can-play` path; a
+       *    capability registered through `extraCapabilities` is passed straight
+       *    through, so `additionalSetup` is silently DROPPED. The cards render
+       *    perfectly and simply do nothing when clicked.
+       * 2. This hook receives ElementSetupData, which has `getElement()` and NOT
+       *    `element` — unlike `updateElement`, which does get `element`. */
+      onMount: ({ getElement, setData }) => {
+        const element = getElement();
         // The launch link is a SIBLING, not a wrapper: a button or link nested
         // inside another anchor makes the parser split the card in two. That
         // exact bug (nested <a>) already cost a live defect on dhseadev.online.
@@ -76,7 +87,6 @@ playhtml.init({
         link.addEventListener('pointerdown', () => {
           setData((d) => { d.n = (Number(d.n) || 0) + 1; });
         }, { passive: true });
-        void getData;
       },
     },
 
@@ -110,7 +120,8 @@ playhtml.init({
         element.setAttribute('aria-label',
           votes === 0 ? 'Not yet rated' : 'Rated ' + avg.toFixed(1) + ' out of 5 from ' + votes + ' ratings');
       },
-      additionalSetup: ({ element, setData }) => {
+      onMount: ({ getElement, setData }) => {   // onMount, not additionalSetup — see above
+        const element = getElement();
         const id = element.id.replace(/^rate-/, '');
         element.querySelectorAll('button.g-star').forEach((b, i) => {
           b.addEventListener('click', (e) => {
