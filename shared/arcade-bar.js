@@ -45,7 +45,12 @@
       warn.textContent = '— saves off (private mode)';
       bar.appendChild(warn);
     }
-    document.body.appendChild(bar);
+    /* FIRST child of <body>, not appended last. Appended, this is the final tab
+     * stop on the page — a "back" control you can only reach after tabbing
+     * through an entire game, which for a canvas game may be never. First child
+     * makes it the first thing keyboard and screen-reader users meet. */
+    if (document.body.firstChild) document.body.insertBefore(bar, document.body.firstChild);
+    else document.body.appendChild(bar);
   }
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', mount, { once: true });

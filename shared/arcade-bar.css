@@ -3,18 +3,22 @@
    every game here paints a full-viewport canvas and several set global rules on
    html/body, so anything unscoped would collide. */
 #arcade-bar{position:fixed;top:0;left:0;z-index:2147483000;display:flex;align-items:center;gap:.5rem;
-  padding:.3rem .7rem .35rem .55rem;margin:0;border:0;border-bottom-right-radius:10px;
-  font:500 12px/1.2 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:.02em;
+  padding:.45rem .85rem .5rem .7rem;margin:0;border:0;border-bottom-right-radius:10px;
+  font:500 13px/1.2 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:.02em;
   color:#E7E3F5;background:rgba(15,23,42,.82);backdrop-filter:blur(8px);
   box-shadow:0 1px 0 rgba(196,181,253,.22),0 6px 20px rgba(0,0,0,.35);
-  opacity:.35;transition:opacity .18s ease,transform .18s ease;transform:translateY(0)}
-#arcade-bar:hover,#arcade-bar:focus-within{opacity:1}
-#arcade-bar a{color:#C4B5FD;text-decoration:none;display:inline-flex;align-items:center;gap:.3rem;
+  /* Was opacity:.35 — which made the only way back out of a game effectively
+     invisible, and put small text far under the contrast floor. Full opacity is
+     the accessible default; the bar earns its unobtrusiveness from being small
+     and tucked into the corner, not from being faint. */
+  opacity:1;transition:box-shadow .18s ease,transform .18s ease;transform:translateY(0)}
+#arcade-bar:hover,#arcade-bar:focus-within{box-shadow:0 1px 0 rgba(196,181,253,.45),0 8px 26px rgba(0,0,0,.45)}
+#arcade-bar a{color:#DDD6FE;text-decoration:none;display:inline-flex;align-items:center;gap:.3rem;
   padding:.2rem .1rem;border-radius:5px}
 #arcade-bar a:hover{color:#EDE9FE;text-decoration:underline}
 #arcade-bar a:focus-visible{outline:2px solid #93C5FD;outline-offset:2px;opacity:1}
 #arcade-bar .ab-sep{opacity:.35}
-#arcade-bar .ab-name{color:#9AA4BF;max-width:42vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#arcade-bar .ab-name{color:#B6BFD4;max-width:42vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 /* A game that hides the cursor or goes fullscreen should not be fighting a bar. */
 :fullscreen #arcade-bar{display:none}
 @media print{#arcade-bar{display:none}}

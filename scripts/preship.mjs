@@ -182,6 +182,40 @@ const rel = (f) => path.relative(OUT, f).split(path.sep).join('/');
   else OK(`nested-interactive: ${anchors.length} anchors, none wrap another interactive element`);
 }
 
+/* ── 10. every indexed page carries real metadata ────────────────────────── */
+{
+  const pages = files.filter(f => f.endsWith('index.html'));
+  let bad = 0;
+  for (const f of pages) {
+    const src = await readFile(f, 'utf8');
+    const n = (re) => (src.match(re) || []).length;
+    const titles = n(/<title>/g);
+    if (titles !== 1) { bad++; F(`seo: ${rel(f)} has ${titles} <title> (need exactly 1)`); }
+    if (!n(/name="description"/g)) { bad++; F(`seo: ${rel(f)} has no meta description but is in sitemap.xml`); }
+    if (!n(/rel="canonical"/g)) { bad++; F(`seo: ${rel(f)} has no canonical`); }
+    if (!n(/property="og:image"/g)) { bad++; F(`seo: ${rel(f)} has no og:image`); }
+    for (const m of src.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)) {
+      try { JSON.parse(m[1]); } catch (e) { bad++; F(`seo: ${rel(f)} JSON-LD does not parse — ${e.message.slice(0, 60)}`); }
+    }
+    if (!n(/application\/ld\+json/g)) { bad++; F(`seo: ${rel(f)} has no structured data`); }
+  }
+  if (!bad) OK(`seo: ${pages.length} indexed pages each have title + description + canonical + og:image + parsing JSON-LD`);
+}
+
+/* ── 11. the GEO layer and the share card actually shipped ───────────────── */
+{
+  const need = ['llms.txt', 'og-card.png', 'sitemap.xml', 'robots.txt'];
+  const missing = need.filter(n => !existsSync(path.join(OUT, n)));
+  if (missing.length) missing.forEach(m => F(`missing top-level asset: ${m}`));
+  else {
+    const llms = await readFile(path.join(OUT, 'llms.txt'), 'utf8');
+    const listed = (llms.match(/^- \[/gm) || []).length;
+    const inSitemap = ((await readFile(path.join(OUT, 'sitemap.xml'), 'utf8')).match(/<loc>/g) || []).length - 1;
+    if (listed !== inSitemap) F(`llms.txt lists ${listed} games but sitemap has ${inSitemap} game URLs — they must agree`);
+    else OK(`geo: llms.txt, og-card.png, sitemap and robots present; llms.txt and sitemap agree on ${listed} games`);
+  }
+}
+
 /* ── report ──────────────────────────────────────────────────────────────── */
 console.log('\npreship-ritual [Web/Frontend] — dhsea-arcade');
 console.log('─'.repeat(74));

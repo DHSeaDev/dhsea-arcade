@@ -102,7 +102,24 @@ for (const [id, url] of [['ARCADE INDEX', ''], ...GAMES]) {
     if (id !== 'ARCADE INDEX') {
       // Shim present, and NOT a real extension context.
       row.shim = await page.evaluate(() => !!(window.chrome?.storage?.local?.get) && !window.chrome?.runtime?.id);
-      row.bar = await page.evaluate(() => !!document.getElementById('arcade-bar'));
+      /* The back control must be the FIRST tab stop, not the last. Appended to
+       * the end of <body> it was reachable only after tabbing through a whole
+       * game — which for a canvas game can mean never. Also assert it is not
+       * faded: it shipped at opacity .35, which made the only exit effectively
+       * invisible and put small text under the contrast floor. */
+      const bar = await page.evaluate(() => {
+        const b = document.getElementById('arcade-bar');
+        if (!b) return null;
+        const cs = getComputedStyle(b);
+        const focusables = [...document.querySelectorAll('a[href],button,input,select,textarea,[tabindex]')]
+          .filter(e => e.offsetParent !== null || e === b.querySelector('a'));
+        return { present: true, opacity: Number(cs.opacity),
+          firstChild: document.body.firstElementChild === b,
+          firstFocusable: focusables[0] ? b.contains(focusables[0]) : false };
+      });
+      row.bar = !!(bar && bar.present && bar.opacity >= 0.9 && bar.firstChild);
+      if (bar && bar.opacity < 0.9) row.errors.push(`arcade bar opacity ${bar.opacity} — the way back is barely visible`);
+      if (bar && !bar.firstChild) row.errors.push('arcade bar is not the first body child — it is the LAST tab stop');
 
       const token = 'verify-' + id + '-' + url.length;
       await page.evaluate(t => chrome.storage.local.set({ __verify__: t }), token);
