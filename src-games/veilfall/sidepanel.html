@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VEILFALL</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20100%20100%22%3E%3Cdefs%3E%3CradialGradient%20id=%22disc%22%20cx=%2250%25%22%20cy=%2234%25%22%20r=%2272%25%22%3E%3Cstop%20offset=%220%25%22%20stop-color=%22%232a2445%22/%3E%3Cstop%20offset=%2258%25%22%20stop-color=%22%231c1930%22/%3E%3Cstop%20offset=%22100%25%22%20stop-color=%22%230b0a12%22/%3E%3C/radialGradient%3E%3ClinearGradient%20id=%22rim%22%20x1=%220%22%20y1=%220%22%20x2=%220%22%20y2=%221%22%3E%3Cstop%20offset=%220%25%22%20stop-color=%22%23ffffff%22%20stop-opacity=%22.55%22/%3E%3Cstop%20offset=%2242%25%22%20stop-color=%22%23e8c37a%22%20stop-opacity=%22.55%22/%3E%3Cstop%20offset=%22100%25%22%20stop-color=%22%23e8c37a%22%20stop-opacity=%22.18%22/%3E%3C/linearGradient%3E%3CradialGradient%20id=%22core%22%20cx=%2242%25%22%20cy=%2234%25%22%20r=%2276%25%22%3E%3Cstop%20offset=%220%25%22%20stop-color=%22%23e6dcff%22/%3E%3Cstop%20offset=%2246%25%22%20stop-color=%22%23a78bfa%22/%3E%3Cstop%20offset=%22100%25%22%20stop-color=%22%236d55c8%22/%3E%3C/radialGradient%3E%3CradialGradient%20id=%22halo%22%20cx=%2250%25%22%20cy=%2250%25%22%20r=%2250%25%22%3E%3Cstop%20offset=%2252%25%22%20stop-color=%22%23a78bfa%22%20stop-opacity=%22.38%22/%3E%3Cstop%20offset=%22100%25%22%20stop-color=%22%23a78bfa%22%20stop-opacity=%220%22/%3E%3C/radialGradient%3E%3CradialGradient%20id=%22outerglow%22%20cx=%2250%25%22%20cy=%2250%25%22%20r=%2250%25%22%3E%3Cstop%20offset=%2262%25%22%20stop-color=%22%23e8c37a%22%20stop-opacity=%22.22%22/%3E%3Cstop%20offset=%22100%25%22%20stop-color=%22%23e8c37a%22%20stop-opacity=%220%22/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle%20cx=%2250.0%22%20cy=%2250.0%22%20r=%2245.00%22%20fill=%22url(%23disc)%22/%3E%3Ccircle%20cx=%2250.0%22%20cy=%2250.0%22%20r=%2245.00%22%20fill=%22none%22%20stroke=%22url(%23rim)%22%20stroke-width=%225%22/%3E%3Ccircle%20cx=%2250.0%22%20cy=%2250.0%22%20r=%2222%22%20fill=%22url(%23halo)%22/%3E%3Cpath%20d=%22M50.00,19.00L68.22,75.08L20.52,40.42L79.48,40.42L31.78,75.08Z%22%20fill=%22none%22%20stroke=%22%23f0dcb4%22%20stroke-width=%226.5%22%20stroke-linejoin=%22round%22/%3E%3Ccircle%20cx=%2250.0%22%20cy=%2250.0%22%20r=%2210.5%22%20fill=%22url(%23core)%22/%3E%3C/svg%3E">
+<style>
+/* ═══════════════════════════════════════════════════════════════════════════
+   VEILFALL — design tokens
+   Built for a 380px side panel. Every state that uses colour ALSO uses a glyph
+   or a shape: alignment is never encoded by hue alone.
+   ═══════════════════════════════════════════════════════════════════════════ */
+:root{
+  --void:#0b0a12; --panel:#14121f; --panel-2:#1c1930; --line:#2a2540;
+  --ink:#e6e3f0; --ink-dim:#9a94b3; --ink-faint:#6b6685;
+  --lantern:#e8c37a; --lantern-dim:#8a7248;
+  --gloaming:#d9455f; --arcane:#a78bfa; --neutral:#4fd1c5;
+  --warn:#f0a05a;
+  --r:10px; --tap:44px;
+  --f-display:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif;
+  --f-ui:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --ease:cubic-bezier(.22,.61,.36,1);
+}
+@media (prefers-reduced-motion: reduce){ *{animation:none!important;transition:none!important} }
+html[data-motion="off"] *{animation:none!important;transition:none!important}
+
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  margin:0;background:var(--void);color:var(--ink);
+  font:14px/1.5 var(--f-ui);
+  display:flex;flex-direction:column;overflow:hidden;
+}
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(120% 80% at 50% -10%, rgba(167,139,250,.13), transparent 60%),
+    radial-gradient(90% 60% at 50% 110%, rgba(232,195,122,.07), transparent 60%);
+}
+
+/* ── Header ─────────────────────────────────────────────────────────────── */
+header{
+  position:relative;z-index:2;flex:0 0 auto;
+  padding:10px 14px 8px;border-bottom:1px solid var(--line);
+  background:linear-gradient(180deg,var(--panel),rgba(20,18,31,.6));
+  backdrop-filter:blur(6px);
+}
+.brand{display:flex;align-items:baseline;gap:8px}
+.brand h1{
+  margin:0;font:600 15px/1 var(--f-display);letter-spacing:.22em;
+  text-transform:uppercase;color:var(--lantern);
+}
+.brand .seedtag{margin-left:auto;font-size:9px;color:var(--ink-faint);letter-spacing:.08em;font-variant-numeric:tabular-nums}
+.phasebar{display:flex;align-items:center;gap:8px;margin-top:6px;font-size:11px;color:var(--ink-dim)}
+.phasebar .pill{
+  padding:2px 9px;border:1px solid var(--line);border-radius:999px;
+  letter-spacing:.12em;text-transform:uppercase;font-size:9.5px;
+}
+.pill.night{border-color:#3b3565;color:var(--arcane);background:rgba(167,139,250,.09)}
+.pill.day{border-color:var(--lantern-dim);color:var(--lantern);background:rgba(232,195,122,.08)}
+.phasebar .count{margin-left:auto;font-variant-numeric:tabular-nums}
+
+/* ── Main ───────────────────────────────────────────────────────────────── */
+main{
+  position:relative;z-index:1;flex:1 1 auto;overflow-y:auto;overscroll-behavior:contain;
+  padding:12px 12px 16px;scrollbar-width:thin;scrollbar-color:var(--line) transparent;
+}
+main::-webkit-scrollbar{width:6px}
+main::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px}
+
+section{margin-bottom:14px}
+.card{
+  background:var(--panel);border:1px solid var(--line);border-radius:var(--r);
+  padding:12px;position:relative;
+}
+.card.arcane{border-color:#332c56;box-shadow:0 0 0 1px rgba(167,139,250,.08) inset}
+h2{margin:0 0 8px;font:600 11px/1 var(--f-ui);letter-spacing:.16em;text-transform:uppercase;color:var(--ink-dim)}
+h3{margin:0 0 4px;font:600 14px/1.3 var(--f-display);color:var(--ink)}
+p{margin:0 0 8px}
+.muted{color:var(--ink-dim)}
+.faint{color:var(--ink-faint);font-size:12px}
+.narration{font-family:var(--f-display);font-size:14.5px;line-height:1.62;color:#cfc9e4}
+.narration em{color:var(--arcane);font-style:italic}
+
+/* ── Buttons ────────────────────────────────────────────────────────────── */
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+.btn{
+  display:flex;align-items:center;justify-content:center;gap:7px;
+  min-height:var(--tap);width:100%;padding:0 14px;
+  background:var(--panel-2);border:1px solid var(--line);border-radius:var(--r);
+  font-weight:600;font-size:13.5px;letter-spacing:.03em;
+  transition:background .16s var(--ease),border-color .16s var(--ease),transform .1s var(--ease);
+}
+.btn:hover:not(:disabled){background:#241f3c;border-color:#3a3360}
+.btn:active:not(:disabled){transform:translateY(1px)}
+.btn:focus-visible{outline:2px solid var(--arcane);outline-offset:2px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.primary{
+  background:linear-gradient(180deg,#3a2f18,#2a2212);
+  border-color:var(--lantern-dim);color:var(--lantern);
+}
+.btn.primary:hover:not(:disabled){background:linear-gradient(180deg,#4a3c1e,#332918)}
+.btn.danger{border-color:#5c2532;color:#f0879a;background:rgba(217,69,95,.09)}
+.btn.ghost{background:transparent}
+.btn.sm{min-height:34px;font-size:12px;padding:0 10px;width:auto}
+.btnrow{display:flex;gap:8px}
+.btnrow .btn{width:auto;flex:1}
+
+/* ── The Circle ─────────────────────────────────────────────────────────── */
+.circlewrap{position:relative;width:100%;aspect-ratio:1;max-height:330px;margin:0 auto}
+.circlewrap.compact{aspect-ratio:auto;height:auto}
+.ringline{
+  position:absolute;inset:14%;border:1px dashed #262040;border-radius:50%;
+  pointer-events:none;
+}
+.ringline::after{
+  content:'';position:absolute;inset:-9%;border:1px solid #1d1834;border-radius:50%;
+}
+.hub{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  text-align:center;pointer-events:none;width:44%;
+}
+.hub .n{font:700 26px/1 var(--f-display);color:var(--ink)}
+.hub .l{font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-faint);margin-top:2px}
+
+.seat{
+  position:absolute;transform:translate(-50%,-50%);
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+  width:60px;padding:4px 2px;border-radius:8px;
+  transition:background .15s var(--ease);
+}
+.seat:focus-visible{outline:2px solid var(--arcane);outline-offset:1px}
+.seat:hover{background:rgba(255,255,255,.04)}
+.token{
+  width:34px;height:34px;border-radius:50%;
+  border:1.5px solid var(--line);background:var(--panel-2);
+  display:grid;place-items:center;font:600 13px/1 var(--f-display);
+  position:relative;
+}
+.seat.me .token{border-color:var(--lantern);box-shadow:0 0 0 2px rgba(232,195,122,.18)}
+.seat.dead .token{opacity:.42;border-style:dashed}
+.seat.dead .nm{opacity:.5;text-decoration:line-through;text-decoration-thickness:1px}
+.seat.marked .token{border-color:var(--gloaming);box-shadow:0 0 10px rgba(217,69,95,.4)}
+.seat.selected .token{border-color:var(--arcane);box-shadow:0 0 0 3px rgba(167,139,250,.3)}
+.nm{font-size:10.5px;line-height:1.15;text-align:center;max-width:58px;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.seat .glyphs{display:flex;gap:2px;height:9px;font-size:8.5px;line-height:1}
+.g-lantern{color:var(--lantern)} .g-gloaming{color:var(--gloaming)}
+.g-unsure{color:var(--ink-faint)} .g-note{color:var(--neutral)}
+.badge{
+  position:absolute;top:-3px;right:-4px;min-width:14px;height:14px;padding:0 3px;
+  border-radius:7px;background:var(--panel);border:1px solid var(--line);
+  font-size:8px;line-height:12px;text-align:center;color:var(--ink-dim);
+}
+
+/* list fallback layout */
+.seatlist{display:flex;flex-direction:column;gap:6px}
+.seatlist .seat{position:static;transform:none;flex-direction:row;width:100%;gap:9px;
+  padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
+.seatlist .nm{max-width:none;text-align:left;flex:1;font-size:13px}
+.seatlist .glyphs{height:auto}
+
+/* ── Discourse ──────────────────────────────────────────────────────────── */
+.feed{display:flex;flex-direction:column;gap:8px;max-height:none}
+.line{
+  padding:8px 10px;border-radius:9px;background:var(--panel);
+  border:1px solid var(--line);border-left:2px solid var(--line);
+  animation:rise .28s var(--ease) both;
+}
+@keyframes rise{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+.line .who{font:600 11px/1 var(--f-ui);letter-spacing:.05em;color:var(--ink-dim);margin-bottom:3px;
+  display:flex;align-items:center;gap:5px}
+.line .txt{font-family:var(--f-display);font-size:13.5px;line-height:1.5}
+.line.mine{border-left-color:var(--lantern);background:rgba(232,195,122,.05)}
+.line.mine .who{color:var(--lantern)}
+.line.whisper{border-left-color:var(--arcane);background:rgba(167,139,250,.06)}
+.line.system{border-style:dashed;background:transparent;font-size:12px;color:var(--ink-dim);
+  font-family:var(--f-ui);border-left-color:var(--line)}
+
+/* ── Vote ───────────────────────────────────────────────────────────────── */
+.tallybar{height:7px;border-radius:4px;background:var(--panel-2);overflow:hidden;margin:8px 0 5px;
+  border:1px solid var(--line);position:relative}
+.tallyfill{height:100%;background:linear-gradient(90deg,var(--lantern-dim),var(--lantern));
+  width:0;transition:width .32s var(--ease)}
+.threshmark{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--gloaming);opacity:.85}
+.votegrid{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
+.votechip{
+  display:flex;align-items:center;gap:4px;padding:3px 7px;border-radius:999px;
+  border:1px solid var(--line);font-size:10.5px;background:var(--panel);
+  animation:rise .2s var(--ease) both;
+}
+.votechip.yes{border-color:var(--lantern-dim);color:var(--lantern);background:rgba(232,195,122,.09)}
+.votechip.no{color:var(--ink-faint)}
+.votechip.blocked{border-style:dashed;color:var(--warn)}
+
+/* ── Sheet (seat detail / modal) ────────────────────────────────────────── */
+.sheet{
+  position:fixed;inset:0;z-index:40;display:none;
+  background:rgba(6,5,12,.72);backdrop-filter:blur(3px);
+}
+.sheet[open]{display:block}
+.sheetbody{
+  position:absolute;left:0;right:0;bottom:0;max-height:86%;overflow-y:auto;
+  background:var(--panel);border-top:1px solid var(--line);
+  border-radius:14px 14px 0 0;padding:14px 14px 20px;
+  animation:slideup .24s var(--ease) both;
+}
+@keyframes slideup{from{transform:translateY(14px);opacity:0}to{transform:none;opacity:1}}
+.sheethead{display:flex;align-items:center;gap:9px;margin-bottom:10px}
+.sheethead h3{margin:0;flex:1}
+.closex{width:32px;height:32px;border-radius:8px;border:1px solid var(--line);
+  display:grid;place-items:center;color:var(--ink-dim)}
+
+/* ── Notebook ───────────────────────────────────────────────────────────── */
+.field{margin-bottom:10px}
+label{display:block;font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink-faint);margin-bottom:4px}
+select,input[type=text],textarea{
+  width:100%;min-height:38px;padding:8px 10px;border-radius:8px;
+  background:var(--panel-2);border:1px solid var(--line);color:var(--ink);
+  font:13px var(--f-ui);
+}
+textarea{min-height:64px;resize:vertical;font-family:var(--f-ui)}
+select:focus,input:focus,textarea:focus{outline:2px solid var(--arcane);outline-offset:0;border-color:var(--arcane)}
+.segrow{display:flex;gap:6px}
+.seg{
+  flex:1;min-height:38px;border:1px solid var(--line);border-radius:8px;
+  background:var(--panel-2);font-size:12px;display:flex;align-items:center;
+  justify-content:center;gap:5px;
+}
+.seg[aria-pressed="true"]{border-color:var(--arcane);background:rgba(167,139,250,.14);color:var(--ink)}
+.seg.lantern[aria-pressed="true"]{border-color:var(--lantern-dim);background:rgba(232,195,122,.14);color:var(--lantern)}
+.seg.gloaming[aria-pressed="true"]{border-color:#5c2532;background:rgba(217,69,95,.14);color:#f0879a}
+
+/* ── Misc ───────────────────────────────────────────────────────────────── */
+.kv{display:flex;justify-content:space-between;gap:10px;padding:5px 0;
+  border-bottom:1px solid rgba(42,37,64,.5);font-size:12.5px}
+.kv:last-child{border-bottom:none}
+.kv .k{color:var(--ink-dim)}
+.kv .v{text-align:right;font-variant-numeric:tabular-nums}
+.role-chip{display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:999px;
+  border:1px solid var(--line);font-size:11px;background:var(--panel-2)}
+.rolecard{
+  text-align:center;padding:16px 14px;border-radius:12px;
+  background:radial-gradient(120% 100% at 50% 0%,rgba(167,139,250,.13),transparent 62%),var(--panel);
+  border:1px solid #332c56;
+}
+.sigil{width:74px;height:74px;margin:0 auto 10px;display:block}
+.rolecard .rname{font:600 21px/1.1 var(--f-display);color:var(--lantern);margin-bottom:3px}
+.rolecard .rteam{font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:10px}
+.rolecard .rability{font-family:var(--f-display);font-size:13.5px;line-height:1.55;color:#d6d0e8}
+.rolecard .rflavour{margin-top:9px;font-size:11.5px;font-style:italic;color:var(--ink-faint)}
+
+/* ── Guidance layer ─────────────────────────────────────────────────────── */
+.suggest{
+  display:flex;gap:8px;align-items:flex-start;
+  padding:9px 11px;margin:0 0 12px;border-radius:9px;
+  background:rgba(167,139,250,.07);border:1px solid #2e2750;
+  border-left:2px solid var(--arcane);
+  font-size:12.5px;line-height:1.5;color:#c3bcdc;
+}
+.suggest .ic{flex:0 0 auto;color:var(--arcane);font-size:12px;line-height:1.4}
+.suggest .x{
+  /* 30px floor: the preship a11y check caught this at 22px. A dismiss control
+     that is hard to hit is worse than no dismiss control. */
+  flex:0 0 auto;margin-left:auto;width:32px;height:32px;margin:-5px -4px -5px auto;
+  border-radius:7px;color:var(--ink-faint);font-size:11px;display:grid;place-items:center;
+}
+.suggest .x:hover{color:var(--ink);background:rgba(255,255,255,.06)}
+.nudgebtn{
+  width:100%;min-height:38px;margin-top:-4px;margin-bottom:12px;
+  border:1px dashed #322b52;border-radius:9px;background:transparent;
+  color:var(--ink-faint);font-size:12px;
+}
+.nudgebtn:hover{color:var(--arcane);border-color:var(--arcane)}
+.nudgetext{
+  padding:10px 12px;margin-bottom:12px;border-radius:9px;
+  background:rgba(79,209,197,.06);border:1px solid #24504b;border-left:2px solid var(--neutral);
+  font-family:var(--f-display);font-size:13.5px;line-height:1.55;color:#bfe6e1;
+}
+
+/* ── Tutorial ───────────────────────────────────────────────────────────── */
+.tut{
+  padding:13px;border-radius:11px;margin-bottom:12px;
+  background:linear-gradient(180deg,rgba(167,139,250,.11),rgba(167,139,250,.04));
+  border:1px solid #3b3268;
+}
+.tut h4{margin:0 0 6px;font:600 14px/1.3 var(--f-display);color:var(--arcane)}
+.tut p{margin:0 0 10px;font-size:12.8px;line-height:1.58;color:#cec7e6}
+.tut .row{display:flex;gap:8px;align-items:center}
+.tut .step{font-size:10px;color:var(--ink-faint);letter-spacing:.08em;margin-left:auto}
+
+/* ── Intro ──────────────────────────────────────────────────────────────── */
+.intro{text-align:center;padding:20px 16px}
+.intro .mark{width:96px;height:96px;margin:0 auto 14px;display:block}
+.intro h2{font:600 12px/1 var(--f-ui);letter-spacing:.2em;color:var(--ink-faint);margin-bottom:10px}
+.intro .lede{font-family:var(--f-display);font-size:16px;line-height:1.6;color:#d8d2ec;margin-bottom:12px}
+.intro .sub{font-size:12.5px;line-height:1.6;color:var(--ink-dim)}
+.beats{display:flex;flex-direction:column;gap:8px;margin:14px 0}
+.beat{display:flex;gap:10px;align-items:flex-start;text-align:left;
+  padding:9px 11px;border:1px solid var(--line);border-radius:9px;background:var(--panel)}
+.beat .n{flex:0 0 auto;width:20px;height:20px;border-radius:50%;border:1px solid var(--lantern-dim);
+  color:var(--lantern);font-size:10px;display:grid;place-items:center;margin-top:1px}
+.beat .t{font-size:12.5px;line-height:1.5;color:var(--ink-dim)}
+.beat .t b{color:var(--ink);font-weight:600}
+
+/* ── Credits ────────────────────────────────────────────────────────────── */
+.credits{margin-top:18px;padding-top:14px;border-top:1px solid var(--line);text-align:center}
+.credits a{color:#C4B5FD;text-decoration:none;border-bottom:1px solid rgba(196,181,253,.35)}
+.credits a:hover{border-bottom-color:#C4B5FD}
+.credits .made{font-size:12px;color:var(--ink-dim);margin-bottom:4px}
+.credits .fine{font-size:10.5px;color:var(--ink-faint);line-height:1.6}
+.linkout{
+  display:flex;align-items:center;justify-content:center;gap:7px;min-height:40px;
+  border:1px solid #3b3268;border-radius:9px;background:rgba(167,139,250,.08);
+  color:var(--arcane);font-size:12.5px;font-weight:600;text-decoration:none;
+}
+.linkout:hover{background:rgba(167,139,250,.15)}
+.usagebox{font-size:11px;color:var(--ink-faint);line-height:1.6;font-variant-numeric:tabular-nums}
+
+footer{
+  position:relative;z-index:2;flex:0 0 auto;padding:9px 12px 11px;
+  border-top:1px solid var(--line);background:var(--panel);
+  display:flex;flex-direction:column;gap:7px;
+}
+.toolbar{display:flex;gap:6px}
+.tool{
+  flex:1;min-height:36px;border:1px solid var(--line);border-radius:8px;
+  background:var(--panel-2);font-size:10.5px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:1px;color:var(--ink-dim);
+}
+.tool[aria-pressed="true"]{border-color:var(--arcane);color:var(--ink)}
+.tool .ic{font-size:13px;line-height:1}
+.sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+  clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.hint{font-size:11px;color:var(--ink-faint);text-align:center}
+.err{border-color:#5c2532;background:rgba(217,69,95,.1);color:#f0879a;
+  padding:9px 11px;border-radius:8px;border:1px solid #5c2532;font-size:12.5px}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Depth — v1 (0.8.0)
+   Elevation is carried by SHADOW and a 1px top rim highlight, never by a
+   full-frame blur: `backdrop-filter` costs ~6x on a software rasteriser and
+   is the single largest render expense measured on this machine class. Every
+   value here is a box-shadow, which composites for free.
+   A three-step scale, applied consistently: e1 resting surface, e2 raised
+   control, e3 floating layer. Nothing here changes layout, colour meaning or
+   contrast — the alignment glyphs remain the load-bearing signal.
+   ═══════════════════════════════════════════════════════════════════════════ */
+:root{
+  --e1:0 1px 2px rgba(0,0,0,.34), 0 2px 8px -4px rgba(0,0,0,.5);
+  --e2:0 1px 1px rgba(0,0,0,.30), 0 3px 10px -3px rgba(0,0,0,.55);
+  --e3:0 10px 34px -12px rgba(0,0,0,.78), 0 2px 8px rgba(0,0,0,.42);
+  --rim:inset 0 1px 0 rgba(255,255,255,.055);
+  --rim-warm:inset 0 1px 0 rgba(232,195,122,.16);
+}
+
+header{box-shadow:0 1px 0 rgba(255,255,255,.03), 0 6px 18px -12px rgba(0,0,0,.9)}
+
+.card{
+  background:linear-gradient(180deg,#171426,var(--panel));
+  box-shadow:var(--e1), var(--rim);
+}
+.card.arcane{box-shadow:var(--e1), var(--rim), 0 0 0 1px rgba(167,139,250,.08) inset}
+
+.btn{box-shadow:var(--e2), var(--rim)}
+.btn:active:not(:disabled){box-shadow:inset 0 1px 3px rgba(0,0,0,.5)}
+.btn:disabled{box-shadow:none}
+.btn.ghost{box-shadow:none}
+.btn.primary{box-shadow:var(--e2), var(--rim-warm)}
+
+.token{box-shadow:var(--e2), inset 0 1px 0 rgba(255,255,255,.07)}
+.seat.me .token{box-shadow:var(--e2), 0 0 0 2px rgba(232,195,122,.18)}
+.seat.marked .token{box-shadow:var(--e2), 0 0 10px rgba(217,69,95,.4)}
+.seat.selected .token{box-shadow:var(--e2), 0 0 0 3px rgba(167,139,250,.3)}
+.badge{box-shadow:0 1px 2px rgba(0,0,0,.5)}
+
+.line{box-shadow:var(--e1)}
+.line.system{box-shadow:none}
+.votechip,.role-chip{box-shadow:0 1px 2px rgba(0,0,0,.32)}
+.tallybar{box-shadow:inset 0 1px 3px rgba(0,0,0,.55)}
+.tallyfill{box-shadow:0 0 10px rgba(232,195,122,.32)}
+
+.rolecard{box-shadow:var(--e3), var(--rim)}
+.sheetbody{box-shadow:var(--e3)}
+.tut,.suggest,.nudgetext{box-shadow:var(--e1), var(--rim)}
+select,input[type=text],textarea{box-shadow:inset 0 1px 2px rgba(0,0,0,.36)}
+.seg{box-shadow:var(--e2), var(--rim)}
+
+/* ── Wide panel ─────────────────────────────────────────────────────────────
+   Chrome's side panel splitter is user-draggable, so the panel is routinely
+   twice its 380px design width. Two things broke there and neither was visible
+   at the design width: the Circle stretched into an ellipse (aspect-ratio:1
+   loses to max-height once the box is wider than 330px), and body prose ran to
+   a measure well past comfortable reading. The layout caps its own content box
+   rather than assuming a width nobody guaranteed. */
+.circlewrap{max-width:330px}
+@media (min-width:520px){
+  main{padding-left:calc((100% - 496px) / 2);padding-right:calc((100% - 496px) / 2)}
+  footer{padding-left:calc((100% - 496px) / 2);padding-right:calc((100% - 496px) / 2)}
+}
+
+/* Windows High Contrast / forced-colours strips shadow anyway; make sure the
+   border does the work there rather than leaving a flat, edgeless surface. */
+@media (forced-colors: active){
+  .card,.btn,.token,.line,.seg,.rolecard,.sheetbody{box-shadow:none;border:1px solid CanvasText}
+}
+</style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <h1>Veilfall</h1>
+      <span class="seedtag" id="seedtag"></span>
+    </div>
+    <div class="phasebar">
+      <span class="pill" id="phasepill">—</span>
+      <span id="phasenote" class="muted"></span>
+      <span class="count" id="alivecount"></span>
+    </div>
+  </header>
+
+  <main id="main" tabindex="-1">
+    <div class="card"><p class="muted">Loading…</p></div>
+  </main>
+
+  <footer id="footer"></footer>
+
+  <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheettitle">
+    <div class="sheetbody" id="sheetbody"></div>
+  </div>
+
+  <div aria-live="polite" class="sr" id="live"></div>
+
+  <script type="module" src="src/ui/app.js"></script>
+</body>
+</html>

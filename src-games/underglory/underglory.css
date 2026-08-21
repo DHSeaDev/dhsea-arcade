@@ -1,0 +1,104 @@
+html,body{margin:0;height:100%;background:#efe9dc;overflow:hidden;
+  font-family:ui-serif,Georgia,serif;-webkit-font-smoothing:antialiased}
+canvas{display:block;position:absolute;inset:0;width:100%;height:100%;cursor:crosshair;
+  touch-action:none}
+#dev{position:absolute;right:10px;top:10px;background:rgba(239,233,220,.94);
+  border:1px solid #cfc6b4;padding:8px 10px;font:11px ui-monospace,monospace;
+  color:#5a5348;display:none;line-height:1.7;z-index:9}
+#dev input[type=range]{width:110px;vertical-align:middle}
+#dev.on{display:block}
+/* the one affordance that is not the plant itself: a hairline seam the popup
+   uses to open the full page. No label — the register forbids text. */
+#open{position:absolute;right:0;top:0;width:26px;height:26px;cursor:pointer;
+  z-index:8;background:transparent;border:0;padding:0}
+#open::after{content:"";position:absolute;right:7px;top:7px;width:10px;height:10px;
+  border-top:1.5px solid rgba(31,28,24,.45);border-right:1.5px solid rgba(31,28,24,.45)}
+#open:hover::after{border-color:rgba(31,28,24,.85)}
+
+/* --- shell: the only text in the product, and it is never on the canvas --- */
+.chip{position:absolute;top:10px;width:30px;height:30px;border-radius:50%;
+  border:1px solid rgba(31,28,24,.22);background:rgba(239,233,220,.86);
+  color:#3b352c;font:15px ui-serif,Georgia,serif;cursor:pointer;z-index:10;
+  display:flex;align-items:center;justify-content:center;padding:0}
+.chip:hover{border-color:rgba(31,28,24,.6)}
+#gear{right:10px}
+#helpbtn{right:48px}
+.panel{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  background:#f6f2e8;border:1px solid #cfc6b4;box-shadow:0 8px 40px rgba(31,28,24,.16);
+  padding:22px 26px;max-width:340px;z-index:11;display:none;
+  font:14px/1.55 ui-serif,Georgia,serif;color:#3b352c}
+.panel.wide{max-width:430px}
+.panel.on{display:block}
+.panel h2{margin:0 0 10px;font-size:18px;font-weight:600;letter-spacing:.02em}
+.panel p{margin:0 0 10px}
+.panel ul{margin:0 0 10px;padding-left:0;list-style:none}
+.panel li{margin:0 0 11px;padding-left:30px;position:relative}
+.panel b{font-weight:600}
+.row{display:flex;gap:8px;align-items:center;margin:0 0 10px}
+.panel button{font:13px ui-serif,Georgia,serif;padding:5px 12px;cursor:pointer;
+  background:#efe9dc;border:1px solid #cfc6b4;color:#3b352c}
+.panel button:hover{border-color:#8a8070}
+.panel input[type=range]{flex:1}
+.hint{font-size:12px;color:#6d6557}
+.close{position:absolute;top:8px;right:10px;border:0!important;background:none!important;
+  font-size:18px!important;line-height:1;padding:2px 6px!important}
+.ico{position:absolute;left:0;top:2px;width:17px;height:17px;border-radius:50%;
+  border:1px solid rgba(31,28,24,.45);display:block}
+.ico-t{background:
+  linear-gradient(to right,transparent 4px,#3b352c 4px,#3b352c 5px,transparent 5px,
+    transparent 11px,#3b352c 11px,#3b352c 12px,transparent 12px),
+  linear-gradient(to bottom,transparent 5px,#3b352c 5px,#3b352c 6px,transparent 6px,
+    transparent 10px,#3b352c 10px,#3b352c 11px,transparent 11px)}
+.ico-f{background:radial-gradient(circle at 30% 35%,#4a3c2a 1.2px,transparent 1.3px),
+  radial-gradient(circle at 62% 28%,#4a3c2a 1.2px,transparent 1.3px),
+  radial-gradient(circle at 70% 62%,#4a3c2a 1.2px,transparent 1.3px),
+  radial-gradient(circle at 34% 68%,#4a3c2a 1.2px,transparent 1.3px)}
+
+
+/* --- HUD, level grid, achievements --------------------------------------- */
+#hud{position:absolute;left:50%;top:8px;transform:translateX(-50%);z-index:9;
+  display:flex;gap:14px;align-items:center;padding:5px 14px;border-radius:14px;
+  background:rgba(239,233,220,.80);border:1px solid rgba(31,28,24,.16);
+  font:13px ui-serif,Georgia,serif;color:#3b352c;letter-spacing:.02em;
+  pointer-events:none;white-space:nowrap}
+#hud span{min-width:34px;text-align:center}
+#hud #hud-lv{font-weight:600}
+#hud #hud-score{font-variant-numeric:tabular-nums;min-width:52px}
+#hud #hud-time{font-variant-numeric:tabular-nums}
+#hud.cleared{border-color:rgba(31,28,24,.55);background:rgba(246,242,232,.95)}
+#lvbtn{right:86px}
+#achbtn{right:124px}
+#toast{position:absolute;left:50%;bottom:26px;transform:translateX(-50%) translateY(14px);
+  background:#f6f2e8;border:1px solid #cfc6b4;padding:8px 16px;border-radius:14px;
+  font:13px ui-serif,Georgia,serif;color:#3b352c;opacity:0;z-index:12;
+  transition:opacity .45s ease,transform .45s ease;pointer-events:none}
+#toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+.grid{display:grid;grid-template-columns:repeat(10,1fr);gap:4px;max-height:230px;
+  overflow:auto;margin:0 0 12px}
+.grid .lv{padding:0;height:26px;font:11px ui-serif,Georgia,serif;background:#efe9dc;
+  border:1px solid #d8cfbc;color:#3b352c;cursor:pointer}
+.grid .lv.done{background:#e3ddcb;border-color:#b9ad95}
+.grid .lv.cur{border-color:#3b352c;border-width:1.5px}
+.grid .lv.locked{opacity:.35;cursor:default}
+.achs{list-style:none;margin:0;padding:0;max-height:300px;overflow:auto}
+.achs .ach{padding:5px 0;border-bottom:1px solid #e6dfcd;opacity:.5;font-size:13px}
+.achs .ach.got{opacity:1}
+.achs .ach b{font-weight:600}
+/* motion settings actually change the page, not just the sim */
+body[data-motion="none"] #toast{transition:none}
+body[data-motion="reduced"] #toast{transition-duration:.15s}
+
+.score{display:flex;justify-content:space-between;padding:4px 0;font-size:13px;
+  border-bottom:1px solid #e6dfcd}
+.score b{font-variant-numeric:tabular-nums;font-weight:600}
+.score.total{border-bottom:0;border-top:1.5px solid #cfc6b4;margin-top:4px;padding-top:8px;
+  font-size:15px}
+#clear .row{margin-top:14px}
+#cl-next{font-weight:600}
+
+#hud.sandbox #hud-time,#hud.sandbox #hud-score{display:none}
+#sandbox,#lv-sandbox{white-space:nowrap}
+
+/* The win plate: a preview of exactly the PNG the buttons hand you. */
+.panel img.plate{display:block;width:100%;max-width:330px;margin:10px auto 12px;
+  border:1px solid rgba(31,28,24,.32);background:#efe9dc}

@@ -1,0 +1,8 @@
+node_modules/
+dist/
+shots/
+
+# Chrome Web Store art and promo assets are not shipped by the build and are
+# kept with the original extension packages, not here.
+src-games/*/store/
+src-games/*/Assetts/

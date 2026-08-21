@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Underglory</title>
+<link rel="stylesheet" href="underglory.css">
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="hud" aria-live="polite">
+  <span id="hud-lv">Level 1</span><span id="hud-time">0:00</span>
+  <span id="hud-score">0</span><span id="hud-vines" title="vines growing / maximum">0/3</span>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+<button id="lvbtn" class="chip" title="Levels" aria-label="Levels">&#9636;</button>
+<button id="achbtn" class="chip" title="Achievements" aria-label="Achievements">&#9733;</button>
+<button id="gear" class="chip" title="Settings" aria-label="Settings">&#9881;</button>
+<button id="helpbtn" class="chip" title="How to play" aria-label="How to play">?</button>
+
+<div id="settings" class="panel" aria-hidden="true" role="dialog" aria-label="Settings">
+  <h2>Settings</h2>
+  <div class="row"><button id="pausebtn" aria-pressed="false">Pause</button>
+    <button id="mute" aria-pressed="false">Mute</button></div>
+  <label class="row" for="vol">Volume <input id="vol" type="range" min="0" max="100" value="100"></label>
+  <div class="row"><button id="restart">Restart level</button>
+    <button id="fullscreen">Full screen</button></div>
+  <div class="row"><button id="skiplv">Skip this level</button></div>
+  <div class="row"><button id="sandbox">Sandbox &mdash; grow your own</button></div>
+  <div class="row" role="group" aria-label="Motion">Motion
+    <button data-motion-set="full" aria-pressed="true">Full</button>
+    <button data-motion-set="reduced" aria-pressed="false">Reduced</button>
+    <button data-motion-set="none" aria-pressed="false">None</button></div>
+  <p class="hint">Space pauses. Esc closes.</p>
+  <button class="close" data-close="settings" aria-label="Close">&times;</button>
+</div>
+
+<div id="tutorial" class="panel wide" aria-hidden="true" role="dialog" aria-label="How to play">
+  <h2>Underglory</h2>
+  <p>Lead the morning glory up to the arch. It will not get there on its own.</p>
+  <ul>
+    <li><b class="ico ico-t"></b><b>Trellis</b> — pick it up, then drag on the paper to build a rail.
+      The vine finds supports and climbs them. Rails stop at walls. Your stock is the fill in the icon.</li>
+    <li><b class="ico ico-f"></b><b>Plant food</b> — pick it up, then click the ground.
+      Everything growing nearby speeds up until it is used up.</li>
+    <li><b>Remove a rail</b> — press and hold a rail you have already built.
+      It comes back into stock in full.</li>
+    <li><b>Prune</b> — press and hold any stem or leaf. What you cut feeds the rest:
+      pruning returns rail and food, and pushes the freed growth out to the furthest tip.
+      Every flower you prune is worth points.</li>
+  </ul>
+  <p class="hint">There is no time limit — the clock only decides how much of the time bonus
+    is left. A course runs three vines at most: once all three are growing, a prune stops
+    making new ones and speeds up whichever vine is nearest the arch instead. The dotted
+    line ahead of each tip is where it is currently headed.</p>
+  <p class="hint">Nothing here can be lost. If a vine wedges itself it will find another
+    way on its own, and any level can be skipped from Settings.</p>
+  <p class="hint">Wheel zooms · right-drag pans · Space pauses.</p>
+  <button class="close" data-close="tutorial" aria-label="Close">&times;</button>
+</div>
+
+<div id="dev">
+  <div>seed <input id="seed" type="number" value="7" style="width:52px"> <button id="reseed">&#8635;</button></div>
+  <div>tick <input id="speed" type="range" min="40" max="600" value="200"> <span id="speedv"></span></div>
+  <div>nodes <span id="ncount"></span> &middot; &Sigma;vigor <span id="vsum"></span></div>
+  <div>d = toggle &middot; r = reset &middot; m = mode</div>
+  <div>mode <span id="modev"></span> &middot; day <span id="dayv"></span> &middot; reached <span id="reachv"></span></div>
+</div>
+
+
+<div id="clear" class="panel" aria-hidden="true" role="dialog" aria-label="Level cleared">
+  <h2 id="cl-lv">Level cleared</h2>
+  <div class="score"><span>Time</span><b id="cl-time">0:00</b></div>
+  <div class="score"><span>Clear</span><b id="cl-base">500</b></div>
+  <div class="score"><span>Time bonus</span><b id="cl-bonus">0</b></div>
+  <div class="score"><span>Flowers pruned</span><b id="cl-flowers">0</b></div>
+  <div class="score total"><span>Score</span><b id="cl-total">0</b></div>
+  <p class="hint" id="cl-best">Best 0</p>
+  <img id="cl-shot" class="plate" alt="Your finished vine, as a plate" style="display:none">
+  <div class="row"><button id="cl-save">Save image</button>
+    <button id="cl-copy">Copy image</button></div>
+  <div class="row"><button id="cl-next">Next level &rarr;</button>
+    <button id="cl-replay">Replay</button>
+    <button id="cl-levels">Levels</button></div>
+</div>
+
+<div id="levels" class="panel wide" aria-hidden="true" role="dialog" aria-label="Levels">
+  <h2>Levels</h2>
+  <p class="hint">One fixed maze per level. Five ahead of your best stay open.</p>
+  <div id="lvgrid" class="grid"></div>
+  <div class="row"><button id="nextlv">Next level</button>
+    <button id="lv-sandbox">Sandbox</button></div>
+  <button class="close" data-close="levels" aria-label="Close">&times;</button>
+</div>
+
+<div id="achievements" class="panel wide" aria-hidden="true" role="dialog" aria-label="Achievements">
+  <h2>Achievements <span id="achcount" class="hint"></span></h2>
+  <ul id="achlist" class="achs"></ul>
+  <button class="close" data-close="achievements" aria-label="Close">&times;</button>
+</div>
+
+<script src="mode-course.js"></script>
+<script src="engine.js"></script>
+</body>
+</html>

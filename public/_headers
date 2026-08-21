@@ -1,0 +1,28 @@
+# Cloudflare Pages headers.
+#
+# CSP is strict on purpose and it is CHEAP here: a source audit of all seven
+# games found zero inline event handlers, zero eval, zero new Function, and zero
+# Workers — MV3 already forbade all of that, so the games were written without
+# them. Bloom Rush's two inline <script> blocks are extracted to a file at build
+# time so it does not need a carve-out either.
+#
+# connect-src names api.groq.com because Veilfall's optional Tier 2 ("Kindled")
+# posts to it with the player's OWN key. That is the ONLY egress destination any
+# game has, and pinning it here means a future dependency cannot quietly add one.
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self' https://api.groq.com; object-src 'none'; base-uri 'self'; form-action 'none'; frame-ancestors 'none'
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=(), interest-cohort=()
+  X-Frame-Options: DENY
+
+# Game code is versioned by deploy, not by filename, so it must revalidate.
+# Getting this wrong is how a player ends up running half of yesterday's build.
+/games/*
+  Cache-Control: public, max-age=0, must-revalidate
+
+/shared/*
+  Cache-Control: public, max-age=0, must-revalidate
+
+/*.png
+  Cache-Control: public, max-age=604800

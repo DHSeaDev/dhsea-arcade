@@ -1,0 +1,84 @@
+/* Prism Cascade — launcher. v2.0.0: darker, quieter, aimed at players who would rather it
+   not look like a toy. by dhseadev */
+:root {
+  --ink: #eaf2ff;
+  --dim: #9aabd6;
+  --line: rgb(140 170 255 / 0.18);
+  --gold: #ffd257;
+  --aqua: #8fe3ff;
+  --violet: #8f7dff;
+  --font: 'Rubik', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  width: 320px;
+  font-family: var(--font);
+  color: var(--ink);
+  background: #080c22;
+}
+.pop { position: relative; padding: 18px 18px 14px; overflow: hidden; }
+
+/* slow aurora wash — the only motion in the launcher */
+.aurora {
+  position: absolute; inset: -40% -20% auto -20%; height: 260px;
+  background:
+    radial-gradient(45% 60% at 30% 40%, rgba(143,125,255,0.40), transparent 70%),
+    radial-gradient(40% 55% at 70% 35%, rgba(111,210,255,0.32), transparent 72%),
+    radial-gradient(50% 60% at 50% 70%, rgba(255,143,199,0.18), transparent 75%);
+  filter: blur(14px);
+  animation: drift 18s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+@keyframes drift {
+  from { transform: translate3d(-6%, 0, 0) scale(1); }
+  to   { transform: translate3d(6%, 4%, 0) scale(1.12); }
+}
+@media (prefers-reduced-motion: reduce) { .aurora { animation: none; } }
+
+.brand { position: relative; display: flex; gap: 12px; align-items: center; }
+.mark { width: 46px; height: 46px; flex: none; filter: drop-shadow(0 0 10px rgba(143,125,255,0.5)); }
+.titles h1 {
+  font-size: 21px; font-weight: 700; letter-spacing: 0.2px;
+  background: linear-gradient(92deg, var(--aqua), var(--violet) 55%, #ff8fc7);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.tag { font-size: 11.5px; color: var(--dim); margin-top: 2px; }
+
+.rankrow {
+  position: relative; display: flex; align-items: center; gap: 8px;
+  margin: 14px 0 10px; font-size: 11px; color: var(--dim);
+}
+.rank { color: var(--aqua); font-weight: 600; white-space: nowrap; }
+.progress { flex: 1; height: 4px; border-radius: 999px; background: rgb(255 255 255 / 0.08); overflow: hidden; }
+.pf { height: 100%; width: 0; border-radius: 999px; background: linear-gradient(90deg, var(--aqua), var(--violet)); transition: width .5s ease; }
+.achcount { white-space: nowrap; }
+
+.stats {
+  position: relative; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+}
+.stat {
+  background: rgb(255 255 255 / 0.05);
+  border: 1px solid var(--line);
+  border-radius: 12px; padding: 10px 12px;
+}
+.stat span { display: block; font-size: 19px; font-weight: 700; letter-spacing: -0.2px; }
+.stat label { display: block; font-size: 10px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--dim); margin-top: 2px; }
+
+.play {
+  position: relative; width: 100%; margin-top: 14px; padding: 13px 16px;
+  border: 0; border-radius: 14px; cursor: pointer;
+  background: linear-gradient(100deg, #6f5cff, #3aa8ff 60%, #43e0d0);
+  color: #071026; font-family: var(--font); text-align: left;
+  box-shadow: 0 8px 22px rgb(60 90 255 / 0.35);
+  transition: transform .12s ease, box-shadow .12s ease, filter .12s ease;
+}
+.play:hover { transform: translateY(-1px); box-shadow: 0 12px 26px rgb(60 90 255 / 0.45); }
+.play:active { transform: translateY(0); filter: brightness(0.95); }
+.play:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.pt { display: block; font-size: 16px; font-weight: 700; }
+.ps { display: block; font-size: 11px; font-weight: 600; opacity: 0.75; }
+
+.hint { position: relative; margin-top: 10px; font-size: 10.5px; color: var(--dim); text-align: center; }
+.credit { position: relative; margin-top: 6px; font-size: 10.5px; color: #6f7fae; text-align: center; }
+.credit a { color: #8fa0ff; text-decoration: none; }
+.credit a:hover { text-decoration: underline; }

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prism Cascade — New Tab</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<canvas id="game" aria-label="Prism Cascade game area"></canvas>
+
+<header id="hud" aria-label="Game status">
+  <div class="hud-left">
+    <span id="hud-level" class="chip">Lv 1</span>
+    <div class="score-wrap">
+      <div class="score-line"><b id="hud-score">0</b><span id="hud-target">/ 0</span></div>
+      <div class="bar"><div id="hud-fill" class="fill"></div></div>
+    </div>
+    <span id="hud-combo" class="combo" aria-live="polite"></span>
+  </div>
+  <div class="hud-mid">
+    <span id="hud-timer" class="timer">30</span>
+  </div>
+  <div class="hud-right">
+    <span class="chip wallet">✨ <b id="hud-wallet">0</b></span>
+    <nav class="btns" aria-label="Game menus">
+      <button id="btn-tree" title="Ability Tree">🌟</button>
+      <button id="btn-map" title="Level Map">🗺️</button>
+      <button id="btn-board" title="Leaderboard">🏆</button>
+      <button id="btn-help" title="How to Play">❓</button>
+      <button id="btn-mute" title="Sound on/off">🔊</button>
+    </nav>
+  </div>
+</header>
+
+<div id="panels" data-kind=""></div>
+
+<footer id="credit">Prism Cascade · crafted with 💛 by <b>dhseadev</b></footer>
+
+<script src="js/logic.js"></script>
+<script src="js/game.js"></script>
+</body>
+</html>

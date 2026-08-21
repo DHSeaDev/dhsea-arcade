@@ -1,0 +1,650 @@
+/* Lumenreel — Prism Crash. Prism theme: black glass, spectral accents. */
+:root{
+  --bg:#070a13; --bg2:#0c1020; --panel:#121829; --panel2:#0e1424;
+  --line:#232c47; --line2:#2f3b5e;
+  --ink:#e9edfb; --ink2:#98a3c4; --ink3:#5f6b8d;
+  --lum:#ffd166;        /* Lumens — warm, the time currency */
+  --fac:#8be9fd;        /* Facets — cool, the collection currency */
+  --meter:#c084fc;
+  --t1:#7dd3fc; --t2:#6ee7b7; --t3:#c4b5fd; --t4:#fda4af; --t5:#fcd34d;
+  --ok:#4ade80; --warn:#fbbf24; --bad:#fb7185;
+  --r:14px; --rs:10px;
+  --spectrum:linear-gradient(90deg,#fb7185,#fbbf24,#4ade80,#38bdf8,#a78bfa,#f472b6);
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+/* scrollbar-gutter reserves the scrollbar's space permanently. Without it, any content
+   that grows the page mid-spin (a win explainer, a long history) makes a vertical
+   scrollbar appear, which narrows the viewport by ~15px and reflows the ENTIRE layout
+   sideways while the user is watching the reels. Reserving the gutter costs 15px once
+   and removes the class of jump entirely. overflow-y:scroll is the fallback. */
+html{scrollbar-gutter:stable;overflow-y:scroll}
+body{
+  margin:0;background:
+    radial-gradient(1200px 700px at 50% -10%, #17203c 0%, transparent 60%),
+    radial-gradient(900px 500px at 110% 110%, #1a1330 0%, transparent 55%),
+    var(--bg);
+  color:var(--ink);
+  font:14px/1.45 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  -webkit-font-smoothing:antialiased;overflow-x:hidden;
+}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+button:disabled{cursor:not-allowed;opacity:.42}
+h1,h2,h3{margin:0;font-weight:650}
+.mono{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+
+/* ---------- shell ---------- */
+.wrap{max-width:1560px;margin:0 auto;padding:14px 18px 34px}
+.topbar{
+  display:flex;gap:14px;align-items:center;flex-wrap:wrap;
+  padding:12px 16px;border:1px solid var(--line);border-radius:var(--r);
+  background:linear-gradient(180deg,rgba(28,36,62,.9),rgba(14,20,36,.9));
+  position:sticky;top:8px;z-index:30;backdrop-filter:blur(9px);
+}
+.brand{display:flex;align-items:center;gap:10px;margin-right:6px}
+.brand .mark{width:30px;height:30px;flex:0 0 30px}
+.brand b{font-size:15px;letter-spacing:.12em;text-transform:uppercase}
+.brand span{font-size:10px;letter-spacing:.28em;color:var(--ink3);text-transform:uppercase;display:block;margin-top:-2px}
+.stat{display:flex;flex-direction:column;min-width:112px}
+.stat .k{font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink3)}
+.stat .v{font-size:19px;font-weight:700;line-height:1.15}
+.stat .s{font-size:10.5px;color:var(--ink2)}
+.v.lum{color:var(--lum)} .v.fac{color:var(--fac)} .v.dex{color:var(--meter)}
+.spacer{flex:1}
+.tbtn{
+  padding:7px 12px;border-radius:9px;border:1px solid var(--line);
+  background:rgba(255,255,255,.03);font-size:12px;letter-spacing:.04em;
+  transition:background .14s,border-color .14s,transform .08s;
+}
+.tbtn:hover:not(:disabled){background:rgba(255,255,255,.09);border-color:var(--line2)}
+.tbtn:active:not(:disabled){transform:translateY(1px)}
+.tbtn.on{background:rgba(192,132,252,.2);border-color:#8b5cf6;color:#e9d5ff}
+
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:16px;margin-top:16px;align-items:start}
+@media(max-width:1180px){.layout{grid-template-columns:1fr}}
+
+.card{
+  border:1px solid var(--line);border-radius:var(--r);
+  background:linear-gradient(170deg,rgba(22,28,48,.92),rgba(12,17,31,.92));
+  overflow:hidden;
+}
+.card>h3{
+  font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink2);
+  padding:11px 14px;border-bottom:1px solid var(--line);display:flex;gap:8px;align-items:center;
+}
+.card>.body{padding:14px}
+
+/* ---------- machine ---------- */
+.machine{position:relative;padding:16px 16px 14px}
+.machine::before{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(700px 320px at 50% 0%, rgba(139,233,253,.09), transparent 70%);
+}
+.reelbox{position:relative;border-radius:var(--r);overflow:hidden;max-width:800px;margin:0 auto;
+  border:1px solid var(--line2);background:linear-gradient(180deg,#080b16,#0d1223)}
+.reels{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;padding:10px;position:relative;z-index:2;
+  max-width:760px;margin:0 auto}
+.reel{display:grid;grid-template-rows:repeat(3,1fr);gap:6px;position:relative}
+.cellwrap{position:relative;aspect-ratio:1/1;border-radius:var(--rs);overflow:hidden;
+  background:linear-gradient(160deg,#131a2e,#0b101d);border:1px solid #1d2540}
+.cell{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+.cell svg{width:78%;height:78%;display:block}
+.cellwrap.win{border-color:#a78bfa;box-shadow:0 0 0 1px #a78bfa inset,0 0 22px rgba(167,139,250,.4)}
+.cellwrap.scat{border-color:#fcd34d;box-shadow:0 0 0 1px #fcd34d inset,0 0 22px rgba(252,211,77,.35)}
+.cellwrap.coin{border-color:#fbbf24;box-shadow:0 0 0 1px #fbbf24 inset,0 0 18px rgba(251,191,36,.3)}
+.cellwrap.dim .cell{opacity:.3;filter:saturate(.35)}
+.reel.spinning .cell{animation:blur .09s steps(2,end) infinite}
+@keyframes blur{0%{transform:translateY(-6%)}100%{transform:translateY(6%)}}
+/* width/height:100% are NOT redundant with inset:0. A <canvas> is a REPLACED element:
+   with width:auto it keeps its intrinsic 300x150 and inset:0 only anchors it top-left,
+   so every particle past x=300 was clipped — which is reels 1-2 and nothing else. That
+   was the real cause of three separate "only some reels react" reports. */
+#fx{position:absolute;inset:0;width:100%;height:100%;z-index:5;pointer-events:none}
+
+.meterrow{display:flex;align-items:center;gap:10px;margin-top:12px;max-width:800px;margin-left:auto;margin-right:auto}
+.meterbar{flex:1;height:12px;border-radius:99px;background:#0b101d;border:1px solid var(--line);overflow:hidden;position:relative}
+.meterfill{height:100%;width:0%;background:var(--spectrum);transition:width .3s ease}
+.meterrow .lbl{font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink3);white-space:nowrap}
+
+.controls{display:flex;gap:10px;align-items:stretch;margin-top:14px;flex-wrap:wrap;max-width:800px;margin-left:auto;margin-right:auto}
+.stakebox{display:flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:11px;padding:6px 8px;background:rgba(255,255,255,.02)}
+.stakebox button{width:30px;height:30px;border-radius:8px;border:1px solid var(--line);font-size:16px;line-height:1}
+.stakebox .val{min-width:104px;text-align:center}
+.stakebox .val .k{font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3)}
+.stakebox .val .v{font-size:15px;font-weight:700;color:var(--lum)}
+.spin{
+  flex:1;min-width:190px;border-radius:12px;font-size:15px;font-weight:750;letter-spacing:.16em;
+  text-transform:uppercase;color:#0b0714;padding:0 20px;min-height:56px;
+  background:linear-gradient(140deg,#ffe9a8,#ffd166 40%,#f59e0b);
+  box-shadow:0 6px 0 #8a5a06,0 12px 26px rgba(245,158,11,.32);
+  transition:transform .07s,box-shadow .07s,filter .14s;
+}
+.spin:hover:not(:disabled){filter:brightness(1.07)}
+.spin:active:not(:disabled){transform:translateY(4px);box-shadow:0 2px 0 #8a5a06,0 6px 16px rgba(245,158,11,.3)}
+.spin.busy{background:linear-gradient(140deg,#cbd5e1,#94a3b8);box-shadow:0 6px 0 #475569}
+.winline{min-height:26px;display:flex;align-items:center;gap:10px;margin:10px auto 0;font-size:13px;color:var(--ink2);max-width:800px}
+.winline b{color:var(--fac);font-size:17px}
+.winline.zero{color:var(--ink3)}
+
+/* ---------- right rail ---------- */
+.tabs{display:flex;gap:3px;padding:10px 8px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.tab{padding:7px 6px;border-radius:8px;font-size:10.5px;letter-spacing:0;color:var(--ink2);border:1px solid transparent}
+.tab.on{background:rgba(139,233,253,.12);border-color:#22d3ee55;color:#a5f3fc}
+.pane{padding:14px;max-height:calc(100vh - 230px);overflow:auto}
+.pane::-webkit-scrollbar{width:9px}
+.pane::-webkit-scrollbar-thumb{background:#2a3350;border-radius:9px}
+
+.row{display:flex;align-items:center;gap:10px;padding:10px;border:1px solid var(--line);
+  border-radius:11px;background:rgba(255,255,255,.02);margin-bottom:8px}
+.row .grow{flex:1;min-width:0}
+.row .nm{font-size:13px;font-weight:600}
+.row .sub{font-size:10.5px;color:var(--ink3)}
+.buy{padding:8px 12px;border-radius:9px;border:1px solid var(--line2);font-size:12px;
+  background:linear-gradient(160deg,rgba(255,209,102,.16),rgba(255,209,102,.05));color:#ffe6ab}
+.buy:disabled{background:rgba(255,255,255,.03);color:var(--ink3)}
+
+.dexgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(74px,1fr));gap:7px}
+.dexcell{aspect-ratio:1/1;border-radius:10px;border:1px solid var(--line);position:relative;
+  background:linear-gradient(160deg,#151b2e,#0d1220);display:flex;align-items:center;justify-content:center;cursor:pointer}
+.dexcell svg{width:92%;height:92%}
+.dexcell.locked{background:#0b0f1b}
+/* Unowned critters show as SILHOUETTES, not question marks: a wall of "?" gives
+   the player nothing to want. The shape is visible, the colour and face are not. */
+.dexcell.locked .sil{width:92%;height:92%;filter:brightness(0) invert(38%) sepia(52%) saturate(420%) hue-rotate(196deg);opacity:.42}
+.dexcell.locked:hover .sil{opacity:.72}
+.dexcell[data-t="1"]{border-color:#7dd3fc44}.dexcell[data-t="2"]{border-color:#6ee7b744}
+.dexcell[data-t="3"]{border-color:#c4b5fd55}.dexcell[data-t="4"]{border-color:#fda4af55}
+.dexcell[data-t="5"]{border-color:#fcd34d77;box-shadow:0 0 16px rgba(252,211,77,.18)}
+.dexcell:not(.locked):hover{transform:translateY(-2px);transition:transform .1s}
+
+.setrow{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--ink2);padding:5px 0}
+.setbar{flex:1;height:6px;border-radius:99px;background:#0b101d;overflow:hidden}
+.setbar i{display:block;height:100%;background:linear-gradient(90deg,#22d3ee,#a78bfa)}
+.setrow.done{color:#a5f3fc}
+
+table.rates{width:100%;border-collapse:collapse;font-size:12px}
+table.rates th,table.rates td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left}
+table.rates th{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);font-weight:600}
+table.rates td.n{text-align:right;font-variant-numeric:tabular-nums}
+.note{font-size:11.5px;color:var(--ink2);line-height:1.6}
+.note b{color:var(--ink)}
+
+/* ---------- overlays ---------- */
+.veil{position:fixed;inset:0;z-index:60;display:none;align-items:center;justify-content:center;
+  background:rgba(4,6,13,.82);backdrop-filter:blur(6px);padding:20px}
+.veil.on{display:flex}
+.modal{width:min(620px,96vw);max-height:88vh;overflow:auto;border:1px solid var(--line2);border-radius:18px;
+  background:linear-gradient(170deg,#1a2138,#0d1322);box-shadow:0 30px 90px rgba(0,0,0,.6)}
+.modal .hd{display:flex;align-items:center;gap:10px;padding:16px 18px;border-bottom:1px solid var(--line)}
+.modal .hd h2{font-size:14px;letter-spacing:.16em;text-transform:uppercase}
+.modal .bd{padding:18px}
+.reveal{text-align:center;padding:26px 20px}
+.reveal .art{width:210px;height:210px;margin:0 auto}
+.reveal .nm{font-size:26px;font-weight:750;margin-top:6px}
+.reveal .set{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink3)}
+.reveal .tag{font-size:13px;color:var(--ink2);margin-top:12px;font-style:italic}
+.reveal .tier{display:inline-block;margin-top:10px;padding:4px 12px;border-radius:99px;font-size:10px;
+  letter-spacing:.2em;text-transform:uppercase;border:1px solid currentColor}
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:70;display:flex;flex-direction:column;gap:8px;align-items:center}
+.toast div{padding:9px 16px;border-radius:99px;border:1px solid var(--line2);background:rgba(16,22,40,.96);font-size:12.5px}
+.banner{margin-top:10px;padding:10px 14px;border-radius:10px;border:1px solid var(--bad);background:rgba(251,113,133,.12);font-size:12.5px;display:none}
+.banner.on{display:block}
+
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:.001ms !important;transition-duration:.001ms !important}
+}
+
+/* ---------- the five Fortunes ladder ---------- */
+.ladder{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;max-width:800px;margin:12px auto 0}
+.prize{border:1px solid var(--line);border-radius:10px;padding:7px 6px;text-align:center;
+  background:linear-gradient(170deg,rgba(255,255,255,.045),rgba(255,255,255,.012));position:relative;overflow:hidden}
+.prize .k{font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink3)}
+.prize .v{font-size:15px;font-weight:750;font-variant-numeric:tabular-nums;margin-top:1px}
+.prize[data-p="mini"] .v{color:#7dd3fc}.prize[data-p="minor"] .v{color:#6ee7b7}
+.prize[data-p="major"] .v{color:#c4b5fd}.prize[data-p="mega"] .v{color:#fda4af}
+.prize[data-p="ultra"] .v{color:#fcd34d}
+.prize.grew{animation:grew .5s ease}
+@keyframes grew{0%{background:rgba(255,255,255,.22)}100%{background:rgba(255,255,255,.03)}}
+.prize.won{border-color:#fcd34d;box-shadow:0 0 0 1px #fcd34d inset,0 0 26px rgba(252,211,77,.5)}
+
+/* ---------- splash + thunder ---------- */
+.cellwrap.splashed{animation:splashin .34s cubic-bezier(.2,1.6,.4,1)}
+@keyframes splashin{0%{transform:scale(.2) rotate(-25deg);opacity:0}60%{transform:scale(1.18) rotate(6deg)}100%{transform:scale(1) rotate(0)}}
+.cellwrap.wildsrc{border-color:#f472b6;box-shadow:0 0 0 1px #f472b6 inset,0 0 24px rgba(244,114,182,.45)}
+.cellwrap.droplet{border-color:#38bdf8;box-shadow:0 0 0 1px #38bdf8 inset,0 0 22px rgba(56,189,248,.5)}
+/* The fused symbol is an OVERLAY on the reel, not a scaled cell. A .cellwrap is
+   overflow:hidden, so the previous version clipped the giant symbol to exactly the
+   one cell it was supposed to escape and the reel rendered empty. */
+.reel.thunder{position:relative}
+.reel.thunder .cellwrap{border-color:#fcd34d;background:linear-gradient(165deg,#2e2614,#161022)}
+.reel.thunder .cell{opacity:0}
+.thunderfuse{position:absolute;inset:0;z-index:5;animation:fuse .42s cubic-bezier(.2,1.5,.4,1);pointer-events:none}
+.thunderfuse svg{position:absolute;left:-11%;top:50%;width:122%;height:auto;transform:translateY(-50%);
+  filter:drop-shadow(0 0 34px rgba(252,211,77,.65))}
+.thunderfuse::before{content:"";position:absolute;inset:6% -14%;border-radius:18px;
+  background:radial-gradient(closest-side,rgba(252,211,77,.28),transparent 72%)}
+@keyframes fuse{0%{transform:scale(.34);opacity:0}62%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
+.thunderbadge{position:absolute;left:50%;bottom:4px;transform:translateX(-50%);
+  background:linear-gradient(140deg,#ffe9a8,#f59e0b);color:#2a1a02;font-weight:800;font-size:14px;
+  padding:3px 13px;border-radius:99px;box-shadow:0 3px 14px rgba(245,158,11,.6);letter-spacing:.04em}
+.splashwave{position:absolute;inset:0;z-index:4;pointer-events:none;opacity:0;
+  background:linear-gradient(100deg,transparent 0%,rgba(244,114,182,.28) 42%,rgba(56,189,248,.3) 52%,transparent 88%)}
+.splashwave.go{animation:wave .62s ease-out}
+@keyframes wave{0%{opacity:0;transform:translateX(-100%)}30%{opacity:1}100%{opacity:0;transform:translateX(100%)}}
+
+/* ---------- win history ---------- */
+.history{max-width:800px;margin:14px auto 0;border:1px solid var(--line);border-radius:var(--r);
+  background:linear-gradient(170deg,rgba(255,255,255,.03),rgba(255,255,255,.008))}
+.hhead{display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid var(--line)}
+.hhead .lbl{font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink3)}
+.hstats{flex:1;font-size:11px;color:var(--ink2)}
+.hrow{display:flex;gap:6px;padding:10px 12px;overflow-x:auto;min-height:74px;align-items:stretch}
+.hrow::-webkit-scrollbar{height:7px}.hrow::-webkit-scrollbar-thumb{background:#2a3350;border-radius:9px}
+.hempty{color:var(--ink3);font-size:12px;align-self:center}
+.hcell{flex:0 0 74px;border:1px solid var(--line);border-radius:9px;padding:6px;text-align:center;
+  background:#0e1322;display:flex;flex-direction:column;gap:2px;animation:hin .3s ease}
+@keyframes hin{0%{transform:translateX(-14px) scale(.9);opacity:0}100%{transform:none;opacity:1}}
+.hcell .hx{font-size:14px;font-weight:750;font-variant-numeric:tabular-nums}
+.hcell .hb{font-size:9px;color:var(--ink3);font-variant-numeric:tabular-nums}
+.hcell .hf{display:flex;gap:2px;justify-content:center;flex-wrap:wrap;margin-top:1px;min-height:12px}
+.hcell .hf i{font-style:normal;font-size:8.5px;padding:1px 4px;border-radius:4px;letter-spacing:.04em}
+.hcell.zero{opacity:.5}.hcell.zero .hx{color:var(--ink3)}
+.hcell.w1 .hx{color:#a5f3fc}.hcell.w2 .hx{color:#6ee7b7}
+.hcell.w3 .hx{color:#c4b5fd;border-color:#7c5cd6}
+.hcell.w4{border-color:#fcd34d;box-shadow:0 0 18px rgba(252,211,77,.28)}.hcell.w4 .hx{color:#fcd34d}
+.fSP{background:rgba(244,114,182,.22);color:#fbcfe8}
+.fTH{background:rgba(252,211,77,.22);color:#fde68a}
+.fWH{background:rgba(192,132,252,.22);color:#e9d5ff}
+.fCR{background:rgba(56,189,248,.22);color:#bae6fd}
+.fFS{background:rgba(110,231,183,.22);color:#a7f3d0}
+
+/* ---------- prism wheel ---------- */
+.wheelwrap{text-align:center;padding:8px 0 4px}
+.wheelwrap svg{width:min(360px,74vw);height:auto}
+.wheelptr{filter:drop-shadow(0 3px 6px rgba(0,0,0,.6))}
+.wheelspin{transition:transform 3.6s cubic-bezier(.16,.9,.2,1)}
+
+/* ---------- win explainer cards ---------- */
+/* Lives in the History pane since v0.6.0, so it is a narrow column, not a wide strip. */
+.windetail{display:flex;flex-direction:column;gap:7px;margin:0 0 10px;min-height:0}
+.windetail:empty{display:none}
+.hcell{cursor:pointer;transition:border-color .12s,background .12s}
+.hcell:hover{border-color:var(--fac)}
+.hcell:focus-visible{outline:2px solid var(--fac);outline-offset:1px}
+.hcell.sel{border-color:var(--fac);background:rgba(255,255,255,.05)}
+.wcard{display:flex;gap:9px;align-items:center;border:1px solid var(--line);border-radius:11px;
+  padding:7px 11px 7px 8px;background:linear-gradient(160deg,rgba(255,255,255,.05),rgba(255,255,255,.014));
+  animation:wcin .28s ease}
+@keyframes wcin{0%{opacity:0;transform:translateY(6px)}100%{opacity:1;transform:none}}
+.wcard svg{display:block;flex:0 0 auto}
+.wcard .wtxt{display:flex;flex-direction:column;line-height:1.25}
+.wcard .wt{font-size:11px;color:var(--ink2)}
+.wcard .wt b{color:var(--ink)}
+.wcard .wv{font-size:14px;font-weight:750;color:var(--fac);font-variant-numeric:tabular-nums}
+.wcard.feat{border-color:#3a2f5e}
+.wcard.more{color:var(--ink3);font-size:11.5px;align-items:center;padding:7px 12px}
+
+/* Every cell gets the SAME slow shimmer. Reported as "some reels are animated and
+   others are not" — it was the ambient particle layer drifting at random, which
+   reads as inconsistency. Now every cell is identically alive. */
+.cellwrap::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:1;
+  background:radial-gradient(120% 90% at 30% 15%, rgba(139,233,253,.09), transparent 62%);
+  animation:cellshimmer 7s ease-in-out infinite}
+@keyframes cellshimmer{0%,100%{opacity:.32;transform:translate(0,0)}50%{opacity:.9;transform:translate(2%,3%)}}
+/* A second, counter-drifting layer so a cell is visibly alive rather than merely
+   not-static. Both layers run IN PHASE across all 15 cells: identical by
+   construction, which is the only way this can stop being noticed. */
+.cellwrap::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:1;
+  background:
+    radial-gradient(closest-side, rgba(167,139,250,.20), transparent) 18% 78%/34px 34px no-repeat,
+    radial-gradient(closest-side, rgba(139,233,253,.16), transparent) 78% 26%/26px 26px no-repeat;
+  animation:cellfloat 6s ease-in-out infinite}
+@keyframes cellfloat{0%,100%{opacity:.45;transform:translate(0,0)}
+  50%{opacity:1;transform:translate(-4%,-6%)}}
+.cell{z-index:2}
+
+/* ---------- VERDANT skin ---------- */
+/* A reskin, strictly: tokens, background, ambient motion and copy. No rule, no
+   probability and no payout differs between the two — see lib/themes.js. */
+body.theme-verdant{
+  --bg:#060b07; --bg2:#0a140c; --panel:#101c14; --panel2:#0b140e;
+  --line:#1f3327; --line2:#2c4635;
+  --ink:#eaf5ec; --ink2:#9bb5a4; --ink3:#5f7a69;
+  --lum:#ffd27a;         /* Sunlight */
+  --fac:#9ae6a0;         /* Seeds */
+  --meter:#facc15;
+  --spectrum:linear-gradient(90deg,#84cc16,#facc15,#fb923c,#f472b6,#34d399,#22d3ee);
+  background:
+    radial-gradient(1200px 700px at 50% -10%, #16301f 0%, transparent 62%),
+    radial-gradient(900px 500px at 110% 110%, #2a2410 0%, transparent 55%),
+    var(--bg);
+}
+body.theme-verdant .reelbox{background:linear-gradient(180deg,#050a06,#0b1610)}
+body.theme-verdant .cellwrap{background:linear-gradient(160deg,#132119,#0a120d);border-color:#1b2c21}
+body.theme-verdant .cellwrap::after{
+  background:radial-gradient(120% 90% at 30% 15%, rgba(132,204,22,.12), transparent 62%);
+  animation:cellshimmer 7s ease-in-out infinite}
+body.theme-verdant .cellwrap::before{
+  background:
+    radial-gradient(closest-side, rgba(163,230,53,.22), transparent) 18% 78%/34px 34px no-repeat,
+    radial-gradient(closest-side, rgba(250,204,21,.18), transparent) 78% 26%/26px 26px no-repeat}
+@keyframes leafsway{0%,100%{opacity:.3;transform:translate(0,0) rotate(0)}
+  50%{opacity:.8;transform:translate(1.5%,2.5%) rotate(.6deg)}}
+body.theme-verdant .machine::before{background:radial-gradient(700px 320px at 50% 0%, rgba(154,230,160,.10), transparent 70%)}
+body.theme-verdant .spin{background:linear-gradient(140deg,#e8f8b8,#a3e635 42%,#65a30d);
+  box-shadow:0 6px 0 #33520a,0 12px 26px rgba(101,163,13,.34);color:#0d1a06}
+body.theme-verdant .spin:active:not(:disabled){box-shadow:0 2px 0 #33520a,0 6px 16px rgba(101,163,13,.3)}
+body.theme-verdant .cellwrap.win{border-color:#a3e635;box-shadow:0 0 0 1px #a3e635 inset,0 0 22px rgba(163,230,53,.42)}
+body.theme-verdant .cellwrap.wildsrc{border-color:#f9a8d4;box-shadow:0 0 0 1px #f9a8d4 inset,0 0 24px rgba(249,168,212,.45)}
+body.theme-verdant .cellwrap.droplet{border-color:#facc15;box-shadow:0 0 0 1px #facc15 inset,0 0 22px rgba(250,204,21,.5)}
+body.theme-verdant .splashwave{background:linear-gradient(100deg,transparent 0%,rgba(250,204,21,.28) 42%,rgba(163,230,53,.3) 52%,transparent 88%)}
+body.theme-verdant .tab.on{background:rgba(163,230,53,.14);border-color:#65a30d88;color:#d9f99d}
+body.theme-verdant .dexcell[data-t="6"]{border-color:#a3e63577;box-shadow:0 0 16px rgba(163,230,53,.2)}
+body.theme-verdant .polyline,body.theme-verdant .wcard{border-color:#26402e}
+/* the ambient leaf drift, verdant only */
+body.theme-verdant .reelbox::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:1;
+  background:
+    radial-gradient(closest-side, rgba(163,230,53,.10), transparent) 12% 18%/70px 70px no-repeat,
+    radial-gradient(closest-side, rgba(250,204,21,.08), transparent) 82% 72%/90px 90px no-repeat;
+  animation:grovebreathe 11s ease-in-out infinite}
+@keyframes grovebreathe{0%,100%{opacity:.5;transform:translateY(0)}50%{opacity:1;transform:translateY(-6px)}}
+
+/* ---------- commentary ticker ---------- */
+.ticker{max-width:800px;margin:0 auto 10px;overflow:hidden;border:1px solid var(--line);
+  border-radius:10px;background:linear-gradient(90deg,rgba(255,255,255,.05),rgba(255,255,255,.015));
+  position:relative;height:30px;display:flex;align-items:center;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 5%,#000 95%,transparent);
+          mask-image:linear-gradient(90deg,transparent,#000 5%,#000 95%,transparent)}
+/* The duration is set in JS from the measured track width, so the marquee moves at a
+   CONSTANT pixel speed regardless of how much commentary is queued. A fixed 34s meant
+   twelve lines flew past unreadably while two lines crawled. The value here is only a
+   fallback for the first frame before pushTicker() measures. */
+/* Driven by JS (startTicker), not a CSS animation. A keyframe animation cannot be
+   appended to without restarting, which is exactly the bug this replaced: every new
+   line snapped the marquee back to the start mid-sentence. */
+.tick-track{display:flex;gap:40px;white-space:nowrap;will-change:transform}
+
+
+.tick-item{font-size:12px;color:var(--ink2)}
+.tick-item b{color:var(--fac);font-weight:650}
+.tick-item.quiet{color:var(--ink3);font-style:italic}
+
+/* ---------- the Grove ---------- */
+.grove{max-width:800px;margin:14px auto 0;border:1px solid var(--line);border-radius:var(--r);
+  background:linear-gradient(170deg,rgba(255,255,255,.032),rgba(255,255,255,.008));overflow:hidden}
+/* v0.9.0 — 172px -> 248px. At the old height a four-line interaction bubble ran out of
+   the top of the strip; playground.js also measures each bubble and pulls it down when it
+   still would not fit, so the two work together rather than either being the whole fix. */
+.pg-stage{position:relative;isolation:isolate;z-index:0;height:248px;overflow:hidden;
+  background:
+    radial-gradient(140% 90% at 50% 118%, rgba(167,139,250,.16), transparent 66%),
+    linear-gradient(180deg,rgba(255,255,255,.015),rgba(0,0,0,.22))}
+body.theme-verdant .pg-stage{background:
+  radial-gradient(140% 90% at 50% 118%, rgba(163,230,53,.18), transparent 66%),
+  linear-gradient(180deg,rgba(255,255,255,.015),rgba(0,0,0,.22))}
+.pg-stage::after{content:"";position:absolute;left:0;right:0;bottom:26px;height:1px;
+  background:linear-gradient(90deg,transparent,var(--line2),transparent)}
+.pg-stage.empty .pg-empty{display:block}
+.pg-empty{display:none;position:absolute;inset:0;align-items:center;justify-content:center;
+  text-align:center;line-height:248px;color:var(--ink3);font-size:12px}
+.pg-actor{position:absolute;bottom:16px;left:0;width:72px;height:72px;cursor:pointer;
+  will-change:transform}
+.pg-art{width:72px;height:72px;transform-origin:50% 90%;transition:transform .12s linear}
+.pg-actor:hover .pg-art{filter:drop-shadow(0 0 12px rgba(167,139,250,.55))}
+/* z-index 400 here used to paint the Grove's speech bubbles OVER the full-screen
+   Playground (z-index 55): .pg-stage had position:relative but no z-index, so it
+   never created a stacking context and the bubble stacked against the root. The
+   stage now isolates, and the bubble's index is scoped inside it. */
+.pg-bub{position:absolute;bottom:78px;left:50%;transform:translateX(-50%) translateY(6px) scale(.92);
+  /* width:max-content is the actual reason bubbles read as TALL. The bubble's containing
+     block is .pg-actor, which is 72px wide, so an auto-width absolute box shrink-wrapped
+     to roughly min-width and wrapped a one-sentence line into six. max-content lets it
+     use its max-width before it starts stacking. */
+  width:max-content;min-width:120px;max-width:340px;padding:8px 11px;border-radius:11px;border:1px solid var(--line2);
+  background:rgba(14,20,36,.97);font-size:11.5px;line-height:1.4;color:var(--ink);
+  white-space:pre-line;opacity:0;pointer-events:none;transition:opacity .18s,transform .18s;z-index:4}
+.pg-bub.on{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}
+.pg-bub::after{content:"";position:absolute;bottom:-6px;left:var(--tail,50%);transform:translateX(-50%) rotate(45deg);
+  width:10px;height:10px;background:rgba(14,20,36,.97);border-right:1px solid var(--line2);border-bottom:1px solid var(--line2)}
+
+/* ---------- arcade ---------- */
+.mg{text-align:center}
+.mg-hud{display:flex;justify-content:space-between;font-size:12px;color:var(--ink2);
+  font-variant-numeric:tabular-nums;margin-bottom:8px;padding:0 2px}
+.mg canvas{max-width:100%;border-radius:12px;border:1px solid var(--line2);
+  background:linear-gradient(180deg,#080d18,#0d1424);touch-action:none}
+.mm-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;max-width:420px;margin:0 auto}
+.mm-card{aspect-ratio:1/1;border-radius:11px;border:1px solid var(--line2);
+  background:linear-gradient(160deg,#1a2238,#0e1524);display:flex;align-items:center;justify-content:center;
+  transition:transform .16s,background .16s;position:relative}
+.mm-card::after{content:"?";position:absolute;font-size:20px;color:#3a4870;font-weight:800}
+.mm-card .mm-face{opacity:0;transition:opacity .12s}
+.mm-card.up,.mm-card.done{background:linear-gradient(160deg,#2a3557,#151d33);transform:rotateY(0)}
+.mm-card.up::after,.mm-card.done::after{display:none}
+.mm-card.up .mm-face,.mm-card.done .mm-face{opacity:1}
+.mm-card.done{border-color:#4ade80;box-shadow:0 0 0 1px #4ade80 inset,0 0 16px rgba(74,222,128,.3)}
+.mm-card svg{width:78%;height:78%}
+.ag-row{display:flex;align-items:center;gap:10px;padding:11px;border:1px solid var(--line);
+  border-radius:11px;background:rgba(255,255,255,.02);margin-bottom:8px}
+.ag-row .grow{flex:1}
+.ag-row .nm{font-size:13px;font-weight:650}
+.ag-row .sub{font-size:10.5px;color:var(--ink3)}
+.ag-cd{font-size:11px;color:var(--warn);font-variant-numeric:tabular-nums}
+
+/* ---------- tutorial ---------- */
+.tut h3{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink2);margin:18px 0 8px}
+.tut h3:first-child{margin-top:0}
+.tut .steps{display:grid;gap:10px}
+.tut .step{display:flex;gap:11px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line);
+  border-radius:11px;background:rgba(255,255,255,.025)}
+.tut .num{flex:0 0 24px;height:24px;border-radius:99px;background:var(--spectrum);color:#0b0714;
+  font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center}
+.tut .step div{font-size:12.5px;line-height:1.5;color:var(--ink2)}
+.tut .step b{color:var(--ink)}
+.tut .paytab{width:100%;border-collapse:collapse;font-size:11.5px;margin-top:6px}
+.tut .paytab td{padding:4px 6px;border-bottom:1px solid var(--line)}
+.tut .paytab td:last-child{text-align:right;font-variant-numeric:tabular-nums;color:var(--fac)}
+.tut .paytab svg{vertical-align:middle}
+.tut .cta{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}
+
+/* ---------- history as a rail panel ---------- */
+.hcol{display:flex;flex-direction:column;gap:6px}
+.hcol .hcell{flex:0 0 auto;width:100%;display:grid;grid-template-columns:auto 1fr auto;
+  align-items:center;gap:10px;text-align:left;padding:7px 10px}
+.hcol .hcell .hx{font-size:14px;min-width:62px}
+.hcol .hcell .hb{font-size:10px}
+.hcol .hcell .hf{justify-content:flex-end;margin:0}
+
+/* ---------- awards ---------- */
+.ahead{font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink2);
+  margin:18px 0 8px;font-weight:600}
+.ach{display:flex;align-items:center;gap:9px;padding:8px 10px;border:1px solid var(--line);
+  border-radius:10px;background:rgba(255,255,255,.02);margin-bottom:6px;opacity:.62}
+.ach.got{opacity:1;border-color:#7c5cd6;background:linear-gradient(160deg,rgba(167,139,250,.14),rgba(255,255,255,.02))}
+.ach .tick{width:16px;text-align:center;color:#c4b5fd;font-size:13px}
+.ach .grow{flex:1;min-width:0}
+.ach .nm{font-size:12.5px;font-weight:620}
+.ach .sub{font-size:10.5px;color:var(--ink3)}
+.ach .rew{font-size:10px;color:var(--lum);white-space:nowrap}
+.ach.got .rew{color:var(--fac)}
+
+/* ---------- shake + turbo ---------- */
+.tbtn.shake{min-width:70px}
+.machine.shaking{animation:mshake .5s cubic-bezier(.36,.07,.19,.97)}
+@keyframes mshake{
+  10%,90%{transform:translate3d(-2px,1px,0) rotate(-.25deg)}
+  20%,80%{transform:translate3d(4px,-2px,0) rotate(.35deg)}
+  30%,50%,70%{transform:translate3d(-6px,2px,0) rotate(-.45deg)}
+  40%,60%{transform:translate3d(6px,-1px,0) rotate(.45deg)}}
+.tbtn.resting{color:var(--warn);border-color:#7a5b12}
+.turbometer{position:absolute;left:0;bottom:0;height:2px;background:var(--spectrum);
+  transition:width .2s linear;border-radius:0 0 9px 9px}
+#btn-turbo{position:relative;overflow:hidden}
+
+/* ---------- the playground ---------- */
+.yard{position:fixed;inset:0;z-index:58;display:flex;flex-direction:column;
+  background:
+    radial-gradient(1200px 700px at 50% -10%, #1b2444 0%, transparent 60%),
+    radial-gradient(900px 600px at 100% 110%, #221a3a 0%, transparent 55%),
+    var(--bg)}
+.yard[hidden]{display:none}
+body.theme-verdant .yard{background:
+  radial-gradient(1200px 700px at 50% -10%, #16301f 0%, transparent 62%),
+  radial-gradient(900px 600px at 100% 110%, #2a2410 0%, transparent 55%), var(--bg)}
+.yd-bar{display:flex;align-items:center;gap:10px;padding:12px 18px;border-bottom:1px solid var(--line);
+  background:rgba(10,14,26,.6);backdrop-filter:blur(8px)}
+.yd-tools{display:flex;gap:6px}
+.yd-tool{padding:7px 13px;border-radius:9px;border:1px solid var(--line);font-size:12px;
+  background:rgba(255,255,255,.03);display:flex;align-items:center;gap:6px}
+.yd-tool i{font-style:normal;font-size:13px;opacity:.8}
+.yd-tool.on{background:rgba(192,132,252,.2);border-color:#8b5cf6;color:#e9d5ff}
+.yd-auto{font-size:11px;color:var(--lum)}
+.yd-stage{flex:1;position:relative;overflow:hidden;margin:14px 18px;border-radius:16px;
+  border:1px solid var(--line);
+  background:
+    radial-gradient(120% 80% at 50% 108%, rgba(167,139,250,.16), transparent 62%),
+    linear-gradient(180deg,rgba(255,255,255,.02),rgba(0,0,0,.28));
+  touch-action:none}
+body.theme-verdant .yd-stage{background:
+  radial-gradient(120% 80% at 50% 108%, rgba(163,230,53,.18), transparent 62%),
+  linear-gradient(180deg,rgba(255,255,255,.02),rgba(0,0,0,.28))}
+.yd-stage[data-tool="move"]{cursor:grab}
+.yd-stage[data-tool="pet"],.yd-stage[data-tool="wash"],.yd-stage[data-tool="poke"],.yd-stage[data-tool="chat"]{cursor:pointer}
+.yd-stage.empty .yd-empty{display:flex}
+.yd-empty{display:none;position:absolute;inset:0;align-items:center;justify-content:center;color:var(--ink3);font-size:13px}
+.yd-actor{position:absolute;left:0;top:0;width:128px;will-change:transform}
+.yd-art{width:128px;height:128px;transform-origin:50% 88%;transition:transform .1s linear;position:relative}
+.yd-actor::after{content:"";position:absolute;inset:0 0 12px 0;pointer-events:none;border-radius:50%;
+  background:radial-gradient(closest-side, rgba(120,100,70,calc(var(--dust,0)*.55)), transparent 72%)}
+.yd-actor.held{filter:drop-shadow(0 12px 18px rgba(0,0,0,.55));z-index:900 !important}
+.yd-actor.held .yd-art{transform:scale(1.14) !important}
+.yd-name{text-align:center;font-size:11px;letter-spacing:.06em;color:var(--ink3);margin-top:-4px;
+  pointer-events:none;white-space:nowrap}
+.yd-actor:hover .yd-name{color:var(--ink2)}
+.yd-bub{position:absolute;bottom:80px;left:50%;transform:translateX(-50%) translateY(6px) scale(.92);
+  width:max-content;min-width:130px;max-width:300px;padding:8px 11px;border-radius:11px;border:1px solid var(--line2);
+  background:rgba(14,20,36,.97);font-size:11.5px;line-height:1.4;color:var(--ink);white-space:pre-line;
+  opacity:0;pointer-events:none;transition:opacity .18s,transform .18s;z-index:500}
+.yd-bub.on{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}
+.yd-fx{position:absolute;inset:0;pointer-events:none}
+.yd-pop{position:absolute;bottom:44px;font-size:15px;font-weight:700;animation:ydpop 1s ease-out forwards;opacity:0}
+@keyframes ydpop{0%{opacity:0;transform:translateY(0) scale(.6)}
+  18%{opacity:1;transform:translateY(-10px) scale(1.15)}
+  100%{opacity:0;transform:translateY(-46px) scale(.9)}}
+.yd-hint{padding:0 18px 14px;font-size:11.5px;color:var(--ink3);text-align:center}
+
+.mm-pop{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-size:30px;color:#4ade80;pointer-events:none;animation:mmpop .85s ease-out forwards}
+@keyframes mmpop{0%{opacity:0;transform:scale(.4)}25%{opacity:1;transform:scale(1.25)}100%{opacity:0;transform:scale(1.6)}}
+
+/* ---------- arcade free plays ---------- */
+.fpbank{display:flex;flex-direction:column;gap:2px;padding:9px 11px;margin:0 0 12px;
+  border:1px dashed var(--line2);border-radius:10px;color:var(--ink3);font-size:11.5px}
+.fpbank.on{border-style:solid;border-color:var(--fac);color:var(--ink2);
+  background:linear-gradient(90deg,rgba(139,233,253,.10),rgba(139,233,253,.02))}
+.fpbank b{color:var(--fac);font-size:15px}
+.fpbank span{font-size:10.5px;color:var(--ink3);line-height:1.35}
+.buy.freeplay{background:linear-gradient(180deg,#8be9fd,#38bdf8);color:#06121b;font-weight:800}
+
+/* ---------- gacha drop ---------- */
+.drawbar{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--line2);
+  border-radius:12px;background:linear-gradient(90deg,rgba(139,233,253,.08),rgba(255,255,255,.02));margin:0 0 10px}
+.drawbar .nm{font-weight:750;font-size:14px}
+.drawbar .sub i{font-style:normal;margin-right:9px;font-size:10.5px;font-weight:700;letter-spacing:.03em}
+.buy.big{padding:11px 18px;font-size:13px;font-weight:800}
+.gacha{display:flex;flex-direction:column;align-items:center;gap:8px}
+.gsvg{width:min(360px,80vw);height:auto;background:#080c16;border:1px solid var(--line);border-radius:12px}
+.gkey{display:flex;gap:12px;font-size:10.5px;font-weight:800;letter-spacing:.04em;flex-wrap:wrap;justify-content:center}
+#gball{filter:drop-shadow(0 0 6px rgba(255,255,255,.75))}
+
+/* ---------- odds: commitment vs essay ---------- */
+.willnot{margin:0 0 8px;padding-left:18px;color:var(--ink2);font-size:12px;line-height:1.6}
+.willnot li{margin-bottom:4px}
+.willnot b{color:var(--ink)}
+#why-detail{margin-top:10px;padding-left:11px;border-left:2px solid var(--line2)}
+
+/* ---------- win roll-up tiers ---------- */
+.wtag{font-style:normal;font-weight:800;letter-spacing:.14em;text-transform:uppercase;
+  font-size:10.5px;padding:2px 7px;border-radius:6px;margin-right:6px;vertical-align:2px}
+.winline.w2 .wtag{background:rgba(110,231,183,.18);color:#6ee7b7}
+.winline.w3 .wtag{background:rgba(139,233,253,.18);color:#8be9fd}
+.winline.w4 .wtag{background:rgba(196,181,253,.20);color:#c4b5fd}
+.winline.w5 .wtag{background:linear-gradient(90deg,#fcd34d,#fb7185);color:#150c05}
+.winline.w4 b,.winline.w5 b{font-size:1.22em}
+.winline.w5{animation:w5pulse .6s ease-in-out infinite alternate}
+@keyframes w5pulse{from{filter:none}to{filter:brightness(1.28)}}
+
+/* ---------- feature rounds played out on the grid ---------- */
+.roundhud{position:absolute;left:10px;right:10px;top:10px;z-index:8;display:flex;gap:12px;
+  align-items:center;padding:8px 13px;border-radius:10px;pointer-events:none;
+  border:1px solid var(--line2);background:rgba(8,12,24,.86);backdrop-filter:blur(7px);
+  animation:rhin .28s cubic-bezier(.2,.9,.3,1)}
+@keyframes rhin{from{opacity:0;transform:translateY(-9px)}to{opacity:1;transform:none}}
+.roundhud .rh-title{font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--fac)}
+.roundhud.hold .rh-title{color:var(--lum)}
+.roundhud .rh-n{font-size:11.5px;color:var(--ink2);font-variant-numeric:tabular-nums}
+.roundhud .rh-tot{margin-left:auto;font-size:14px;font-weight:800;color:var(--fac)}
+.roundhud .rh-tot.big{font-size:20px}
+.roundhud .rh-left{font-size:10.5px;color:var(--ink3)}
+.roundhud.retrig{border-color:var(--lum);box-shadow:0 0 0 1px var(--lum),0 0 22px rgba(255,209,102,.35)}
+.roundhud.done{border-color:var(--fac);box-shadow:0 0 26px rgba(139,233,253,.28)}
+.cellwrap.held{box-shadow:inset 0 0 0 2px var(--lum);background:rgba(255,209,102,.10)}
+.heldval{display:flex;align-items:center;justify-content:center;height:100%;
+  font-weight:800;font-size:15px;color:var(--lum);font-variant-numeric:tabular-nums}
+.heldval.jp{font-size:11px;letter-spacing:.1em;color:#fff;
+  text-shadow:0 0 10px rgba(255,209,102,.9)}
+
+.prize .mh{font-size:9px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink3);margin-top:2px}
+.prize.soon{border-color:var(--lum);box-shadow:0 0 0 1px var(--lum) inset}
+.prize.soon .mh{color:var(--lum);font-weight:800}
+
+/* ---------- playground page commentary ---------- */
+.yd-feed{margin:0 18px 16px;display:flex;flex-direction:column;gap:5px;max-height:132px;overflow:hidden}
+.yd-line{display:flex;gap:9px;align-items:baseline;font-size:12.5px;color:var(--ink2);
+  padding:5px 11px;border-radius:9px;border:1px solid transparent;opacity:.55;
+  transition:opacity .3s,border-color .3s}
+.yd-line b{color:var(--fac);font-weight:750;flex:0 0 auto}
+.yd-line.fresh{opacity:1;border-color:var(--line2);background:rgba(255,255,255,.035)}
+.yd-line.quiet{font-style:italic;color:var(--ink3);opacity:.75}
+
+/* ---------- profiles ---------- */
+.proflist{display:flex;flex-direction:column;gap:6px}
+.profrow{display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:10px;
+  border:1px solid var(--line);background:rgba(255,255,255,.02)}
+.profrow.on{border-color:var(--fac);background:linear-gradient(90deg,rgba(139,233,253,.10),rgba(139,233,253,.02))}
+.profrow .nm{font-weight:700;font-size:13px}
+.profrow .nm i{font-style:normal;font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--fac);margin-left:7px}
+.profrow .sub{font-size:11px;color:var(--ink3);margin-top:2px}
+
+/* ---------- playground: ticker, chatlog, roster drawer (v0.9.0) ---------- */
+.yd-tick{position:relative;overflow:hidden;margin:0 18px;height:26px;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);
+          mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent)}
+.yd-tick .tick-track{position:absolute;left:0;top:0;height:26px;align-items:center}
+
+/* Three lines, pinned. The feed used to hold six and grow the page; on a short
+   window that pushed the stage out of view, which is the opposite of the point. */
+.yd-feed{flex:0 0 auto;margin:0 18px 14px;min-height:74px;display:flex;
+  flex-direction:column;justify-content:flex-end;gap:4px}
+.yd-feed .yd-line:nth-child(n+4){display:none}
+
+.yd-drawer{position:absolute;left:0;right:0;bottom:0;top:auto;max-height:64%;
+  display:flex;flex-direction:column;z-index:6;
+  background:linear-gradient(180deg,rgba(8,11,22,.94),rgba(8,11,22,.99));
+  border-top:1px solid var(--line);box-shadow:0 -18px 48px rgba(0,0,0,.6)}
+.yd-drawer[hidden]{display:none}
+.yd-drawer-bar{display:flex;align-items:center;gap:8px;padding:11px 18px;
+  border-bottom:1px solid var(--line);font-size:13px}
+.yd-picker{overflow:auto;padding:14px 18px 18px;
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:10px}
+.yd-pick-cell{position:relative;border:1px solid var(--line);border-radius:12px;padding:6px 4px 4px;
+  background:rgba(255,255,255,.02);cursor:pointer;text-align:center;transition:border-color .12s,background .12s}
+.yd-pick-cell:hover{border-color:var(--line2);background:rgba(255,255,255,.05)}
+.yd-pick-cell.out{border-color:#8b5cf6;background:rgba(139,92,246,.16)}
+.yd-pick-cell.full:not(.out){opacity:.42;cursor:not-allowed}
+.yd-pick-cell .nm{font-size:10px;color:var(--ink2);margin-top:2px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.yd-pick-cell .dot{position:absolute;top:5px;right:6px;width:8px;height:8px;border-radius:50%;
+  background:transparent;border:1px solid var(--line2)}
+.yd-pick-cell.out .dot{background:#a78bfa;border-color:#a78bfa}

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prism Cascade</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<canvas id="game" aria-label="Prism Cascade game area"></canvas>
+
+<header id="hud" aria-label="Game status">
+  <div class="hud-left">
+    <span id="hud-level" class="chip">Lv 1</span>
+    <span id="hud-mode" class="chip mode" style="display:none"></span>
+    <div class="score-wrap">
+      <div class="score-line">
+        <b id="hud-score">0</b><span id="hud-target">/ 0</span>
+        <span id="hud-stars" class="pips" title="Star targets"><i>★</i><i>★</i><i>★</i></span>
+      </div>
+      <div class="bar"><div id="hud-fill" class="fill"></div></div>
+    </div>
+    <span id="hud-combo" class="combo" aria-live="polite"></span>
+  </div>
+
+  <div class="hud-mid">
+    <span id="hud-timer" class="timer">30</span>
+    <span id="hud-shots" class="chip shots" style="display:none"></span>
+  </div>
+
+  <div class="hud-right">
+    <span class="chip wallet">✨ <b id="hud-wallet">0</b></span>
+    <nav class="btns" aria-label="Game menus">
+      <button id="btn-tree" title="Ability Tree">🌟</button>
+      <button id="btn-shop" title="Provisions">🧰</button>
+      <button id="btn-endow" title="Endowments">💠</button>
+      <button id="btn-map" title="Levels &amp; Challenges">🗺️</button>
+      <button id="btn-ach" title="Achievements">🏅</button>
+      <button id="btn-help" title="How to Play">❓</button>
+      <button id="btn-music" title="Music on/off">🎵</button>
+      <button id="btn-sfx" title="Sound effects on/off">🔊</button>
+      <button id="btn-give" class="danger" title="End this round now">🏳</button>
+    </nav>
+  </div>
+</header>
+
+<div id="itembar" aria-label="Provisions — press 1 to 4"></div>
+
+<div id="panels" data-kind=""></div>
+
+<footer id="credit">Prism Cascade v2.0.0 · crafted with 💛 by
+  <a href="https://dhseadev.online" target="_blank" rel="noopener noreferrer"><b>dhseadev.online</b></a>
+</footer>
+
+<script src="js/logic.js"></script>
+<script src="js/achievements.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/game.js"></script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Prism Cascade</title>
+<link rel="stylesheet" href="popup.css">
+</head>
+<body>
+<div class="pop">
+  <div class="aurora" aria-hidden="true"></div>
+
+  <header class="brand">
+    <svg class="mark" viewBox="0 0 64 64" aria-hidden="true">
+      <defs>
+        <linearGradient id="pg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#9be8ff"/><stop offset="0.5" stop-color="#8f7dff"/><stop offset="1" stop-color="#ff8fc7"/>
+        </linearGradient>
+      </defs>
+      <path d="M32 6 L54 44 L10 44 Z" fill="none" stroke="url(#pg)" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M32 6 L32 44" stroke="url(#pg)" stroke-width="1.4" opacity="0.55"/>
+      <path d="M6 52 C 18 44, 26 60, 38 52 S 58 46, 60 54" fill="none" stroke="#6fd2ff" stroke-width="2.4" stroke-linecap="round" opacity="0.9"/>
+      <circle cx="32" cy="30" r="3" fill="#ffd257"/>
+    </svg>
+    <div class="titles">
+      <h1>Prism Cascade</h1>
+      <p class="tag">Shatter light. Ride the cascade.</p>
+    </div>
+  </header>
+
+  <div class="rankrow">
+    <span id="p-rank" class="rank">—</span>
+    <div class="progress"><div id="p-achfill" class="pf"></div></div>
+    <span id="p-ach" class="achcount">—</span>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><span id="p-level">–</span><label>Level</label></div>
+    <div class="stat"><span id="p-best">–</span><label>Best round</label></div>
+    <div class="stat"><span id="p-stars">–</span><label>Stars</label></div>
+    <div class="stat"><span id="p-drops">–</span><label>Stardrops</label></div>
+  </div>
+
+  <button id="play" class="play"><span class="pt">Continue</span><span id="p-sub" class="ps">Level 1</span></button>
+
+  <p class="hint">Opens in its own tab · hold to charge, release to throw</p>
+  <p class="credit">by <a id="site" href="https://dhseadev.online" target="_blank" rel="noopener noreferrer">dhseadev.online</a></p>
+</div>
+<script src="popup.js"></script>
+</body>
+</html>

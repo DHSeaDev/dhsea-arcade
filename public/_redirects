@@ -1,0 +1,6 @@
+# Keep the old entry filenames working if anything ever linked them directly.
+/games/prism-cascade/game.html   /games/prism-cascade/   301
+/games/underglory/play.html      /games/underglory/      301
+/games/veilfall/sidepanel.html   /games/veilfall/        301
+/games/emberkeep/page.html       /games/emberkeep/       301
+/games/emberkeep-mountain/page.html /games/emberkeep-mountain/ 301

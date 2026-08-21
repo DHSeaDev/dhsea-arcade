@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Emberkeep</title>
+<link rel="stylesheet" href="src/style.css">
+</head>
+<body>
+  <main>
+    <header>
+      <div class="t">
+        <h1 id="roomName">1.</h1>
+        <p id="roomHint"></p>
+      </div>
+      <div class="meters">
+        <span id="burn">nothing burned</span>
+        <div class="bar" role="img" aria-label="How far Ember can see"><i id="fuel"></i></div>
+      </div>
+    </header>
+
+    <div class="row">
+      <div class="stage">
+        <canvas id="cv" width="960" height="480" aria-label="Emberkeep play area"></canvas>
+      </div>
+      <aside class="rail">
+        <div class="log" id="log" aria-label="What Ember has been saying"></div>
+        <canvas id="pt" width="150" height="230" aria-label="Ember, reacting"></canvas>
+        <div class="mood" id="mood">content</div>
+      </aside>
+    </div>
+
+    <p id="say" aria-live="polite" class="sr"></p>
+
+    <footer>
+      <span><b>&larr; &rarr;</b> move</span>
+      <span><b>Space / &uarr;</b> jump</span>
+      <span><b>F</b> spark</span>
+      <span><b>R</b> restart room</span>
+      <span><b>Tab</b> goals</span>
+      <span><b>L</b> the keep</span>
+      <span><b>Q</b> wick</span>
+      <span><b>G</b> ghost</span>
+      <span><b>M</b> mute</span>
+      <span><b>P</b> fps</span>
+      <span class="note">If your fire runs out you lose the room — never your progress.</span>
+    </footer>
+  </main>
+  <script type="module" src="src/game.js"></script>
+</body>
+</html>

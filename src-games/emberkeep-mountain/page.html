@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Emberkeep — Mountain</title>
+<link rel="stylesheet" href="src/style.css">
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <h1 id="chapter">I.</h1>
+        <p id="title"></p>
+      </div>
+      <div class="right">
+        <span id="progress"></span>
+      </div>
+    </header>
+    <div class="stage"><canvas id="cv" width="1100" height="760" aria-label="The mountain"></canvas></div>
+    <p id="say" aria-live="polite"></p>
+    <footer>
+      <span><b>Click</b> to walk</span>
+      <span><b>Drag a handle</b> to turn the mountain</span>
+      <span><b>R</b> restart</span>
+      <span><b>C</b> what you have brought back</span>
+      <span><b>E</b> express</span>
+      <span><b>Esc</b> chapters</span>
+      <span><b>M</b> mute</span>
+      <span class="note">Nothing here can hurt you. There is no way to lose.</span>
+    </footer>
+  </main>
+  <script type="module" src="src/game.js"></script>
+</body>
+</html>

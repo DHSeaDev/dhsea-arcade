@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "Emberkeep",
+  "version": "2.2.0",
+  "description": "A small fire that would rather not burn things down. Ten rooms, and a way through every one without burning anything.",
+  "permissions": ["storage"],
+  "background": { "service_worker": "background.js" },
+  "action": { "default_title": "Open Emberkeep" },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

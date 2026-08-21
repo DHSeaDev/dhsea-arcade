@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Underglory</title>
+<link rel="stylesheet" href="underglory.css">
+<style>html,body{width:300px;height:330px;overflow:hidden}
+#front{padding:20px 22px;font:14px/1.5 ui-serif,Georgia,serif;color:#3b352c}
+#front h1{margin:0 0 2px;font-size:20px;font-weight:600;letter-spacing:.03em}
+#front .hint{margin:0 0 14px}
+#front .stat{display:flex;justify-content:space-between;padding:5px 0;
+  border-bottom:1px solid #e6dfcd;font-size:13px}
+#front button{width:100%;margin-top:16px;padding:9px;font:14px ui-serif,Georgia,serif;
+  background:#efe9dc;border:1px solid #cfc6b4;color:#3b352c;cursor:pointer}
+#front button:hover{border-color:#8a8070}
+</style>
+</head>
+<body>
+<div id="front">
+  <h1>Underglory</h1>
+  <p class="hint">Lead the morning glory to the arch.</p>
+  <div class="stat"><span>Level</span><b id="p-lv">1</b></div>
+  <div class="stat"><span>Levels cleared</span><b id="p-cleared">0</b></div>
+  <div class="stat"><span>Best score</span><b id="p-best">0</b></div>
+  <div class="stat"><span>Achievements</span><b id="p-ach">0 of 25</b></div>
+  <button id="p-play">Play</button>
+</div>
+<script src="popup.js"></script>
+</body>
+</html>

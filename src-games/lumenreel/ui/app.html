@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lumenreel · Prism Crash</title>
+<link rel="stylesheet" href="theme.css">
+</head>
+<body>
+<div id="symdefs"></div>
+
+<div class="wrap">
+  <header class="topbar">
+    <div class="brand">
+      <svg class="mark" viewBox="0 0 100 100" aria-hidden="true">
+        <defs><linearGradient id="bm" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#8be9fd"/><stop offset="55%" stop-color="#a78bfa"/><stop offset="100%" stop-color="#f472b6"/>
+        </linearGradient></defs>
+        <path d="M50 8 L88 76 L12 76 Z" fill="none" stroke="url(#bm)" stroke-width="7" stroke-linejoin="round"/>
+        <path d="M6 50 L40 50" stroke="#fff" stroke-width="5" stroke-linecap="round"/>
+        <path d="M60 52 L96 40" stroke="#fb7185" stroke-width="4" stroke-linecap="round"/>
+        <path d="M60 56 L96 52" stroke="#fbbf24" stroke-width="4" stroke-linecap="round"/>
+        <path d="M60 60 L96 64" stroke="#4ade80" stroke-width="4" stroke-linecap="round"/>
+        <path d="M60 64 L96 76" stroke="#38bdf8" stroke-width="4" stroke-linecap="round"/>
+      </svg>
+      <div><b>Lumenreel</b><span>Prism Crash</span></div>
+    </div>
+
+    <div class="stat"><div class="k" id="lbl-lum">Lumens</div><div class="v lum mono" id="lumens">0</div><div class="s mono" id="rate">+0 / sec</div></div>
+    <div class="stat"><div class="k" id="lbl-fac">Facets</div><div class="v fac mono" id="facets">0</div><div class="s" id="nextcost">next critter —</div></div>
+    <div class="stat"><div class="k">Collection</div><div class="v dex mono" id="owned">0/100</div><div class="s" id="setline">no sets complete</div></div>
+
+    <div class="spacer"></div>
+    <button class="tbtn" id="btn-yard" title="Visit the playground">Playground</button>
+    <button class="tbtn" id="btn-arcade" title="Open the arcade">Arcade</button>
+    <button class="tbtn" id="btn-theme" title="Switch skin">Prism</button>
+    <button class="tbtn" id="btn-auto">Auto</button>
+    <button class="tbtn" id="btn-turbo" title="A budget of fast spins. When it runs out it rests, then refills.">Turbo</button>
+    <button class="tbtn on" id="btn-sfx">Sound</button>
+    <button class="tbtn on" id="btn-music" title="Cycle Ambient / Pop / Rock / Off">Music · Ambient</button>
+    <button class="tbtn" id="btn-help" title="How to play">How to play</button>
+  </header>
+
+  <div class="banner" id="banner"></div>
+
+  <div class="layout">
+    <!-- machine -->
+    <section class="card">
+      <div class="machine">
+        <!-- Commentary readout. The Grove talks; this is where you can read it
+             without watching the playground. -->
+        <div class="ticker" id="ticker" aria-live="polite">
+          <div class="tick-track" id="tick-track"><span class="tick-item quiet">The Grove is quiet.</span></div>
+        </div>
+
+        <div class="reelbox">
+          <div class="reels" id="reels"></div>
+          <canvas id="fx"></canvas>
+        </div>
+
+        <!-- The five Fortunes. Always visible, always growing: the ladder is the
+             reason a Lumen Core landing matters even when it pays nothing. -->
+        <div class="ladder" id="ladder"></div>
+
+        <div class="meterrow">
+          <span class="lbl" id="lbl-meter">Prism Meter</span>
+          <div class="meterbar"><div class="meterfill" id="meterfill"></div></div>
+          <span class="lbl mono" id="metertxt">0 / 300</span>
+        </div>
+
+        <div class="controls">
+          <div class="stakebox">
+            <button id="stake-down" aria-label="Lower stake">−</button>
+            <div class="val"><div class="k">Bet · 20 lines</div><div class="v mono" id="betval">20</div></div>
+            <button id="stake-up" aria-label="Raise stake">+</button>
+          </div>
+          <button class="spin" id="spin">Spin</button>
+          <button class="tbtn" id="btn-max" style="min-width:74px">Max bet</button>
+          <button class="tbtn shake" id="btn-shake" title="It cannot possibly help">Shake</button>
+        </div>
+
+        <div class="winline zero" id="winline">Stake Lumens. The reels pay Facets. Nothing you stake comes back.</div>
+
+        <!-- The win explainer moved into the History tab in v0.6.0. It lived here,
+             below the reels, and every card it added grew the centre column — which is
+             what put a scrollbar on the page mid-spin and shifted the whole layout. -->
+
+        <!-- THE GROVE. Three to seven of the critters you own loiter here and
+             comment on the reels. Click one to make it say something. -->
+        <div class="grove" id="grove">
+          <div class="hhead">
+            <span class="lbl">The Grove</span>
+            <span class="hstats" id="grovestats"></span>
+            <button class="tbtn" id="grove-shuffle" style="padding:4px 9px;font-size:10.5px">Shuffle</button>
+          </div>
+          <div class="pg-stage empty" id="pg-stage"><div class="pg-empty">Draw a critter and it will move in.</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- rail -->
+    <section class="card">
+      <div class="tabs" id="tabs">
+        <button class="tab on" data-pane="history">History</button>
+        <button class="tab" data-pane="dex">Dex</button>
+        <button class="tab" data-pane="cuts" id="tab-cuts">Prism</button>
+        <button class="tab" data-pane="arcade">Arcade</button>
+        <button class="tab" data-pane="goals">Goals</button>
+        <button class="tab" data-pane="rates">Odds</button>
+        <button class="tab" data-pane="info">About</button>
+      </div>
+      <div class="pane" id="pane"></div>
+    </section>
+  </div>
+</div>
+
+<!-- THE PLAYGROUND. A full surface, not a modal: the machine keeps running
+     behind it and pulls you back only for a massive payout or a minigame. -->
+<div class="yard" id="yard" hidden>
+  <div class="yd-bar">
+    <div class="brand" style="margin-right:auto">
+      <b style="font-size:14px;letter-spacing:.12em;text-transform:uppercase">Playground</b>
+      <span id="yd-count" style="font-size:11px;color:var(--ink3);margin-left:10px"></span>
+    </div>
+    <div class="yd-tools" id="yd-tools"></div>
+    <span class="yd-auto" id="yd-auto"></span>
+    <button class="tbtn" id="yd-pick">Choose who is out</button>
+    <button class="tbtn" id="yd-png">Save PNG</button>
+    <button class="tbtn" id="yd-share">Share card</button>
+    <button class="tbtn" id="yd-close">Back to the reels</button>
+  </div>
+  <!-- The Playground's own ticker. Same lines as the strip above the reels, so a
+       critter that speaks on the stage is also readable when it has wandered off. -->
+  <div class="yd-tick"><div class="tick-track" id="yd-tick-track"></div></div>
+  <div class="yd-stage" id="yd-stage" data-tool="move"><div class="yd-empty">Collect a critter and it will show up here.</div></div>
+  <div class="yd-hint" id="yd-hint"></div>
+  <!-- The page's own commentary, pinned to the bottom and held to three lines. -->
+  <div class="yd-feed" id="yd-feed"></div>
+
+  <!-- Roster drawer: who is out, up to YARD_CAP. Built by renderYardPick(). -->
+  <div class="yd-drawer" id="yd-drawer" hidden>
+    <div class="yd-drawer-bar">
+      <b>Who is out</b>
+      <span id="yd-pick-count" class="sub"></span>
+      <span style="margin-left:auto"></span>
+      <button class="tbtn" id="yd-pick-newest">Newest 24</button>
+      <button class="tbtn" id="yd-pick-rarest">Rarest 24</button>
+      <button class="tbtn" id="yd-pick-none">Put all away</button>
+      <button class="tbtn" id="yd-pick-done">Done</button>
+    </div>
+    <div class="yd-picker" id="yd-picker"></div>
+  </div>
+</div>
+
+<div class="veil" id="veil"><div class="modal" id="modal"></div></div>
+<div class="toast" id="toast"></div>
+
+<script type="module" src="controller.js"></script>
+</body>
+</html>

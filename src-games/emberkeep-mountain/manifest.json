@@ -1,0 +1,10 @@
+{
+  "manifest_version": 3,
+  "name": "Emberkeep - Mountain",
+  "version": "0.5.0",
+  "description": "A small fire climbs an impossible mountain to light what went dark. No falling, no failing, no hurry.",
+  "permissions": ["storage"],
+  "background": { "service_worker": "background.js" },
+  "action": { "default_title": "Open Emberkeep - Mountain" },
+  "icons": { "16": "icons/icon16.png", "32": "icons/icon32.png", "48": "icons/icon48.png", "128": "icons/icon128.png" }
+}
