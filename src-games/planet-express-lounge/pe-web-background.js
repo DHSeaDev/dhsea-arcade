@@ -49,7 +49,25 @@
 
   // Web-port additions
   const LAST_TICK_KEY  = "dmLastTick";
-  const OFFLINE_CAP_MIN = 480;        // 8h of away-time accrues; beyond that, nothing
+
+  /* CAP: 90 minutes, not the 8 hours an idle game would use.
+   * `/idle-economy-balance` §5 puts a generic cap at 6–12h, and 8h was taken
+   * from that band without checking it against THIS app's sinks. All the content
+   * costs ~400 DM (ten inventions at 25, plus one Mega at 150); an 8h cap paid
+   * ~1920 per return, roughly five times everything there is to buy, which makes
+   * the Lab's only two decisions free forever. 90 minutes pays ~360 — about one
+   * meaningful purchase per return, which is the shape the sinks actually want.
+   * Size a cap to the sinks, not to a band borrowed from a different genre. */
+  const OFFLINE_CAP_MIN = 90;
+
+  /* FIRST-VISIT SEED. In the extension the alarm ticked all day in the
+   * background, so Dark Matter existed before the panel was ever opened. On the
+   * web a first load is 0, the cheapest thing in the Lab costs 25, and the tick
+   * pays ~4/min — so a brand-new visitor stares at an inert
+   * "GENERATE INVENTION (25 ⚛)" for six minutes. The Lab is the second thing
+   * anyone clicks. Seeding one invention's worth is not generosity; it is the
+   * background accrual the web has no way to have done. */
+  const FIRST_VISIT_SEED = 30;
 
   const randInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 
@@ -139,8 +157,15 @@
     const now  = Date.now();
     const last = parseInt(s[LAST_TICK_KEY]) || 0;
 
-    if (!last) {                                   // first ever load — start the clock
+    if (!last) {
+      // First ever load: start the clock and seed, so the Lab is usable at once.
+      // Keyed on the tick timestamp rather than on a zero balance — a returning
+      // visitor who has legitimately spent down to 0 must NOT be re-seeded.
       await chrome.storage.local.set({ [LAST_TICK_KEY]: now });
+      if (await getDarkMatter() === 0) {
+        await addDarkMatter(FIRST_VISIT_SEED, "Welcome aboard");
+        return FIRST_VISIT_SEED;
+      }
       updateTitle(await getDarkMatter());
       return 0;
     }

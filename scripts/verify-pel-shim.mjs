@@ -207,8 +207,11 @@ await page.addScriptTag({ content: SHIM });
     await globalThis.__PE_DM__.settleOfflineAccrual();
     return globalThis.__PE_DM__.getDarkMatter();
   });
-  // cap 480 ticks × max 7 = 3360 ceiling; a week uncapped would be ~10080 ticks.
-  ok("offline accrual is capped", capped <= 3360 && capped >= 480, `7 days away ⇒ ${capped} DM (cap ceiling 3360)`);
+  // Ceiling derived from the shipped constant, not hardcoded — a cap change must
+  // not silently loosen its own gate.
+  const CAP = await p3.evaluate(() => globalThis.__PE_DM__.OFFLINE_CAP_MIN);
+  ok("offline accrual is capped", capped <= CAP * 7 && capped >= CAP,
+     `7 days away ⇒ ${capped} DM (cap ${CAP} ticks ⇒ ceiling ${CAP * 7})`);
 
   // Persistence across a reload — the property the whole shim exists for.
   const before = await p3.evaluate(() => globalThis.__PE_DM__.getDarkMatter());
@@ -267,10 +270,27 @@ await page.addScriptTag({ content: SHIM });
     for (let i = 0; i < 25; i++) await globalThis.__PE_DM__.settleOfflineAccrual();
     return globalThis.__PE_DM__.getDarkMatter();
   });
-  // One capped payout ceilings at 480 ticks x 7 = 3360. Twenty-five settles of a
-  // 30-day gap would reach ~84,000 if the remainder carried forward.
-  ok("CONTROL repeated settles cannot farm a long absence", farm <= 3360,
-     `30 days away, settled 25x => ${farm} DM (single-payout ceiling 3360)`);
+  const CAP2 = await p4.evaluate(() => globalThis.__PE_DM__.OFFLINE_CAP_MIN);
+  // Twenty-five settles of a 30-day gap would reach tens of thousands if the
+  // remainder carried forward. One capped payout ceilings at CAP x 7.
+  ok("CONTROL repeated settles cannot farm a long absence", farm <= CAP2 * 7,
+     `30 days away, settled 25x => ${farm} DM (single-payout ceiling ${CAP2 * 7})`);
+
+  // 6c. FIRST-VISIT SEED — the Lab must be usable on arrival, and a visitor who
+  // has legitimately spent down to zero must NOT be re-seeded.
+  const seed = await p4.evaluate(async () => {
+    localStorage.removeItem("pel:dmLastTick");
+    localStorage.setItem("pel:darkMatter", "0");
+    await globalThis.__PE_DM__.settleOfflineAccrual();
+    const fresh = await globalThis.__PE_DM__.getDarkMatter();
+    // Now simulate a real visitor who spent everything: clock exists, balance 0.
+    localStorage.setItem("pel:darkMatter", "0");
+    localStorage.setItem("pel:dmLastTick", JSON.stringify(Date.now()));
+    await globalThis.__PE_DM__.settleOfflineAccrual();
+    return { fresh, spentDown: await globalThis.__PE_DM__.getDarkMatter() };
+  });
+  ok("first visit can afford an invention immediately", seed.fresh >= 25, `${seed.fresh} DM on arrival (invention costs 25)`);
+  ok("CONTROL a spent-down visitor is not re-seeded", seed.spentDown === 0, `${seed.spentDown} DM`);
   await p4.close();
 }
 

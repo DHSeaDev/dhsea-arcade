@@ -122,6 +122,28 @@ refused to emit. `browserRequirements` differs too: an app with no canvas does
 not claim to need one.
 
 
+### 5b. Dark Matter curve, tuned against the sinks — DECLARED CHANGE
+`/idle-economy-balance` was run on the relocated economy. The check that matters
+most **passes**: no path is DM-positive (generate −25 → scrap +10 = −15; five
+inventions −125 → five scraps +50 → one free recycled, scrapping it +5), so cost
+dominates benefit and there is no loop. Two web-specific findings were acted on:
+
+- **`OFFLINE_CAP_MIN` 480 → 90.** The 8h cap came from that skill's generic 6–12h
+  band without being checked against THIS app's sinks. All the content costs ~400
+  DM (ten inventions at 25 plus one Mega at 150); an 8h cap paid ~1920 per return
+  — five times everything there is to buy, which makes the Lab's only two
+  decisions free forever. 90 minutes pays ~360, about one meaningful purchase.
+- **`FIRST_VISIT_SEED = 30`, new.** In the extension the alarm ticked all day in
+  the background, so DM existed before the panel was ever opened. On the web a
+  first load is 0, the cheapest Lab action costs 25, and the tick pays ~4/min —
+  so a new visitor faced an inert "GENERATE INVENTION (25 ⚛)" for six minutes.
+  The seed is keyed on the absence of a tick timestamp, NOT on a zero balance, so
+  a visitor who has legitimately spent down to zero is never re-seeded.
+
+Both are asserted in `verify-pel-shim.mjs`, and the cap gate now derives its
+ceiling from the shipped constant rather than a literal — a cap change must not
+be able to silently loosen its own gate.
+
 ### 6. Review findings, and the gates that now cover them
 An adversarial review panel (three independent reviewers — correctness, security,
 first-run/a11y — each given the contract without the author's reasoning) ran after
