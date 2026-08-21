@@ -11,8 +11,19 @@
      invisible, and put small text far under the contrast floor. Full opacity is
      the accessible default; the bar earns its unobtrusiveness from being small
      and tucked into the corner, not from being faint. */
-  opacity:1;transition:box-shadow .18s ease,transform .22s ease;transform:translateY(0);
-  will-change:transform}
+  /* Movement is on `top`, NOT `transform`, and that is a measured decision, not
+     a preference. The first cut hid by transform and worked perfectly in
+     headless Chromium — then did nothing at all on the live Veilfall page: the
+     CSS transition on `transform` sat in its "before" phase forever
+     (getAnimations() reported a CSSTransition playState "running" with a null
+     currentTime), pinning the computed value to the from-state. Even an INLINE
+     translateY(-200px) computed to the identity matrix. Setting
+     `transition:none` made the very same transform apply instantly, which
+     isolated it to the transition rather than the transform.
+     `top` is a layout property with no compositor involvement, it moved the bar
+     correctly on that same page, and it cannot be pinned this way. `will-change`
+     is gone with it — it existed only to hint the transform. */
+  opacity:1;top:0;transition:box-shadow .18s ease,top .22s ease}
 
 /* ── auto-hide ──────────────────────────────────────────────────────────────
    Hidden by TRANSFORM, never by opacity, display or visibility.
@@ -23,12 +34,18 @@
    translateY(-110%) parks it just past its own box-shadow so no glow survives
    at the top edge, and pointer-events:none is what actually stops it eating a
    click on the control it used to sit on. */
-#arcade-bar[data-state="collapsed"]{transform:translateY(-110%);pointer-events:none}
+/* -200px, not -100%: percentage `top` on a fixed element resolves against the
+   VIEWPORT, not the element, so a percentage here would fling it a screen-height
+   away and make the transition look broken. 200px clears the bar plus its
+   shadow even when a long game name wraps it to two lines.
+   !important because this bar is injected into eight codebases it does not
+   control, and being overridden is how it ends up parked on a game's UI again. */
+#arcade-bar[data-state="collapsed"]{top:-200px !important;pointer-events:none}
 
 /* Focus ALWAYS wins, and it is a plain CSS rule on purpose: if arcade-bar.js
    throws or is blocked, a keyboard user must still be able to Tab to the exit
    and see where the focus went. The exit does not depend on script. */
-#arcade-bar:focus-within{transform:translateY(0) !important;pointer-events:auto !important}
+#arcade-bar:focus-within{top:0 !important;pointer-events:auto !important}
 #arcade-bar:hover,#arcade-bar:focus-within{box-shadow:0 1px 0 rgba(196,181,253,.45),0 8px 26px rgba(0,0,0,.45)}
 
 /* The reveal target for touch. Inert wherever a pointer can hover — there the

@@ -251,3 +251,28 @@ it does not do.
 Planet Express reclaims its header gutter the same way: the 12rem indent is now
 `#arcade-bar[data-state="revealed"] ~ .app .header`, a general-sibling selector
 reading the bar's own state, so there is no second timer to drift out of sync.
+
+### Correction, same day: the bar hides by `top`, not `transform`
+The first cut hid by `transform: translateY(-110%)`. It passed `verify.mjs` on all
+eight pages in headless Chromium — and then did **nothing at all** on the live
+Veilfall page.
+
+Diagnosis, on the deployed origin: `getAnimations()` reported a `CSSTransition`
+with `playState: "running"` and a **null `currentTime`** — a transition stuck in
+its "before" phase forever, pinning the computed value to the from-state. Even an
+**inline** `translateY(-200px)` computed to the identity matrix. Setting
+`transition: none` made the identical transform apply instantly, which isolates
+it to the transition, not the transform.
+
+Movement is now on `top` — a layout property, no compositor involvement, and it
+moved the bar correctly on the very page where transform would not.
+`will-change: transform` is gone with it. `-200px` rather than `-100%` because a
+percentage `top` on a fixed element resolves against the VIEWPORT, not the
+element. `!important` because this bar is injected into eight codebases it does
+not control.
+
+**The gate could not have caught this, and that is the point worth keeping.**
+Headless Chromium ran the transition normally, so the container was green on
+genuinely broken code. The runtime of record for a CSS transition is a real
+browser on a real page, and the only thing that found it was checking the live
+origin after deploying. Post-deploy verification is not a formality here.
