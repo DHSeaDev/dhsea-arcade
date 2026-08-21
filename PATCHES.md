@@ -276,3 +276,26 @@ Headless Chromium ran the transition normally, so the container was green on
 genuinely broken code. The runtime of record for a CSS transition is a real
 browser on a real page, and the only thing that found it was checking the live
 origin after deploying. Post-deploy verification is not a formality here.
+
+### Correction to the correction: the transform diagnosis was wrong
+The note above says the transform hide "did nothing at all on the live Veilfall
+page" and blames a stuck transition on `transform`. **The observation was real;
+the cause was misattributed, and the switch to `top` was made for a reason that
+does not hold.**
+
+The tab being inspected was BACKGROUNDED: `document.visibilityState === "hidden"`,
+`requestAnimationFrame` never firing, `document.timeline.currentTime` advancing
+`0ms` across a 600ms wait. Chrome freezes the animation timeline in a background
+tab, so **no** transition of **any** property advances and every transitioned
+value reads as its from-state. Switching to `top` produced the identical symptom
+— which is what finally exposed it. A screenshot, which forces a real render,
+shows the bar correctly hidden and Veilfall's corner control fully exposed.
+
+Both properties work. `top` is kept because it is deployed and correct, not
+because it is better — `transform` is the conventional choice and would be fine.
+
+The durable lesson is about the instrument: **a computed style read from a
+background tab says nothing about a transition.** Check `document.visibilityState`
+before trusting one, exactly as a benchmark is validated before its numbers are.
+This is the harness-bug-reads-as-app-bug class again, and this time it survived
+two rounds of diagnosis before being caught.

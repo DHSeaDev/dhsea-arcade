@@ -11,18 +11,22 @@
      invisible, and put small text far under the contrast floor. Full opacity is
      the accessible default; the bar earns its unobtrusiveness from being small
      and tucked into the corner, not from being faint. */
-  /* Movement is on `top`, NOT `transform`, and that is a measured decision, not
-     a preference. The first cut hid by transform and worked perfectly in
-     headless Chromium — then did nothing at all on the live Veilfall page: the
-     CSS transition on `transform` sat in its "before" phase forever
-     (getAnimations() reported a CSSTransition playState "running" with a null
-     currentTime), pinning the computed value to the from-state. Even an INLINE
-     translateY(-200px) computed to the identity matrix. Setting
-     `transition:none` made the very same transform apply instantly, which
-     isolated it to the transition rather than the transform.
-     `top` is a layout property with no compositor involvement, it moved the bar
-     correctly on that same page, and it cannot be pinned this way. `will-change`
-     is gone with it — it existed only to hint the transform. */
+  /* Movement is on `top`. `transform` would work equally well and is the
+     conventional choice; this is not a considered preference and nothing depends
+     on it.
+     RECORDED HONESTLY, because the commit that made this change asserted a cause
+     that was WRONG: the first cut hid by transform, and when checked on the live
+     page the computed transform stayed at identity, so it was diagnosed as
+     "transitions on transform are broken here" and switched to `top`. The real
+     cause was that the tab being inspected was BACKGROUNDED —
+     `document.visibilityState === "hidden"`, `requestAnimationFrame` never
+     firing, `document.timeline.currentTime` advancing 0ms. Chrome freezes the
+     animation timeline in a background tab, so NO transition of any property
+     advances, and every transitioned value reads as its from-state. `top` then
+     showed the identical symptom, which is what exposed the real cause.
+     The lesson worth keeping is about the instrument, not the property: a
+     computed value read from a background tab tells you nothing about a
+     transition. Check `document.visibilityState` before believing one. */
   opacity:1;top:0;transition:box-shadow .18s ease,top .22s ease}
 
 /* ── auto-hide ──────────────────────────────────────────────────────────────
