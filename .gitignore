@@ -6,3 +6,4 @@ shots/
 # kept with the original extension packages, not here.
 src-games/*/store/
 src-games/*/Assetts/
+.preship-tmp.mjs

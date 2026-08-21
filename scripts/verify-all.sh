@@ -7,4 +7,5 @@ echo; echo "▸ syntax";         for f in $(find dist/games -name '*.js' -not -p
 echo; echo "▸ boot / paint / shim / persistence, under the production CSP"; node scripts/verify.mjs
 echo; echo "▸ bloom-rush persistence";  node scripts/verify-bloomrush-save.mjs
 echo; echo "▸ veilfall llm-security";   node scripts/verify-veilfall-security.mjs
+echo; echo "â¸ preship-ritual [Web/Frontend]"; node scripts/preship.mjs
 echo; echo "ALL GATES PASS"
