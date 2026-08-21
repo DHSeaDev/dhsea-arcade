@@ -1,0 +1,196 @@
+/**
+ * pel-fullscreen.css — the web layer.
+ *
+ * Loaded AFTER pel.css. It changes layout only: no colours, no character
+ * coding, no component internals. Every rule here is either a scale token or a
+ * container query in disguise.
+ *
+ * The type scale is not in this file by accident — it is the whole point.
+ * pel.css was converted from px to rem so that ONE declaration below rescales
+ * 606 lengths at once. Without that conversion this file would need ~40
+ * font-size overrides and would still lose to the inline styles that used to
+ * exist on 31 elements.
+ */
+
+/* ── the one number ──────────────────────────────────────────────────────────
+ * 16px at phone width (identity with the original side panel), rising to 21px
+ * on a wide desktop. The design was drawn at 8–11px for a 380px panel; read at
+ * arm's length on a 27" monitor those sizes are not small, they are unreadable.
+ *   390px  → 15.4 → clamped 16      (identical to the extension)
+ *   768px  → 16.7
+ *  1440px  → 19.0
+ *  2560px  → 23.0 → clamped 21      (stops the design becoming a poster)
+ */
+html {
+  font-size: clamp(16px, 14px + 0.35vw, 21px);
+}
+
+/* The side panel could assume it owned a 380px-wide viewport that never
+ * scrolled. A browser tab does not scroll either, but it IS the whole screen,
+ * so the app box becomes the dynamic viewport — dvh, not vh, so a mobile URL
+ * bar collapsing does not leave a dead strip under the composer. */
+html, body { height: 100%; overflow: hidden; }
+.app { height: 100dvh; }
+
+/* The arcade back control is `position: fixed` at top-left with a very high
+ * z-index, and verify.mjs asserts it is the first body child at full opacity —
+ * so it is not moved, restyled, or reordered here. It is simply given room:
+ * without this the chip lands on top of the 🚀 logo. */
+/* Below 40rem there is no room to indent past the chip, so the app is pushed
+ * DOWN by its height instead. Without this the chip sits on top of the header
+ * and the product name is unreadable on every phone — which is what the first
+ * phone screenshot showed while the desktop one looked finished. The two
+ * widths are separate designs and each one has to be looked at. */
+@media (max-width: 39.99rem) {
+  .app { padding-top: 2.1rem; }
+}
+
+@media (min-width: 40rem) {
+  /* The chip is fixed-position and ~11rem wide, so the header is INDENTED past
+   * it rather than sliding under it. `min-width: 0` on the logo is the other
+   * half: .header is a flex row, and a flex item's default `min-width: auto`
+   * refuses to shrink below its content, so the indent pushed the title out of
+   * the header's overflow instead of reflowing it — which is why the first
+   * screenshot read ".ANET EXPRESS". */
+  .header { padding-left: 12rem; }
+  .header .logo { min-width: 0; }
+  .header .logo-title, .header .logo-sub { white-space: nowrap; }
+}
+
+/* ── wide: the tab strip becomes a rail ──────────────────────────────────────
+ * Same markup, same `.tab[data-tab]` → `.panel#panel-x` contract, same JS. The
+ * only thing that changes is which axis `.tabs` runs on and where the grid puts
+ * it. Rewriting this as a real left-rail component would have cost edits across
+ * 1,708 lines of sidepanel.js to buy exactly this picture.
+ *
+ * All five panels are assigned the same grid area. Only `.panel.active` is
+ * `display: flex`, so precisely one ever occupies the cell — the single-active
+ * invariant the JS already maintains is what makes this safe.
+ */
+@media (min-width: 64rem) {
+  .app {
+    display: grid;
+    grid-template-columns: 13rem minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(0, 1fr);
+    grid-template-areas:
+      "header header"
+      "rail   banner"
+      "rail   main";
+  }
+  .header           { grid-area: header; }
+  .tabs             { grid-area: rail; }
+  .not-ready-banner { grid-area: banner; }
+  .panel            { grid-area: main; min-width: 0; }
+
+  .tabs {
+    flex-direction: column;
+    align-items: stretch;
+    border-bottom: 0;
+    border-right: 1px solid var(--border);
+    padding-top: 0.5rem;
+    gap: 1px;
+  }
+  /* `.tab` carries `flex: 1` for the horizontal strip, where it makes five tabs
+   * share the width evenly. Turned vertical that same declaration makes them
+   * share the HEIGHT evenly — five 180px-tall tabs down a 1000px rail, with the
+   * active one rendering as a giant coloured slab. The axis changed, so the flex
+   * basis has to change with it. */
+  .tabs { justify-content: flex-start; }
+  .tab {
+    flex: 0 0 auto;
+    text-align: left;
+    border-bottom: 0;
+    border-left: 2px solid transparent;
+    padding: 0.7rem 0.9rem;
+  }
+  .tab.active {
+    border-bottom-color: transparent;
+    border-left-color: var(--gold);
+    background: color-mix(in srgb, var(--gold) 8%, transparent);
+  }
+}
+
+/* ── CHAT: a measure, not a column ───────────────────────────────────────────
+ * Panels are never made co-visible — that would break the single-active
+ * invariant above and risk duplicate ids against lab.js's Dark Matter widget.
+ * The width is spent INSIDE the panel instead. A 1400px-wide line of dialogue
+ * is unreadable regardless of what else is on screen, so chat is capped at a
+ * normal measure and centred; the composer tracks it so the two stay aligned.
+ */
+#chatlog > *,
+#ap-stream > * {
+  max-width: 74ch;
+  width: 100%;
+  margin-inline: auto;
+}
+.chat-footer > *,
+.demo-chatlog > * {
+  max-width: 74ch;
+  margin-inline: auto;
+}
+
+/* ── LAB / SAVED / SETTINGS: lists become grids ──────────────────────────────
+ * These three panels are stacks of self-contained cards. On a wide viewport a
+ * single 1400px column of them is just a long scroll with 1000px of nothing on
+ * either side, which is the "stretched side panel" failure this layer exists to
+ * avoid. Cards flow into columns instead; each card is untouched internally.
+ */
+@media (min-width: 64rem) {
+  #panel-lab, #panel-cold, #panel-settings {
+    overflow-y: auto;
+  }
+  #panel-lab > .lab-section-card,
+  #panel-settings .s-section {
+    break-inside: avoid;
+  }
+
+  /* `.active` IS PART OF THE SELECTOR, and leaving it off is not a style choice —
+   * it is a rendering bug that every automated gate passes.
+   *
+   * `.panel { display: none }` has class weight. `#panel-settings { display:
+   * block }` has id weight, so it wins EVEN WHEN THE PANEL IS INACTIVE: all five
+   * panels paint at once, stacked in the same grid cell, and the page becomes an
+   * unreadable collage. The first build of this file did exactly that, and
+   * shim.spec (28/28), css-equivalence (5/5) and the arcade's own verify (9/9)
+   * were all green while it was happening — boot, paint, storage and the back
+   * control were all genuinely fine.
+   *
+   * Scoping to `.active` restores the single-active invariant: the id rule can
+   * only match the panel the JS has actually switched on. */
+  #panel-settings.active {
+    display: block;
+    column-width: 26rem;
+    column-gap: 1.25rem;
+    padding: 1rem;
+  }
+  /* The Patent Office gallery is a scroll-capped list sized for a 380px panel.
+   * Given real width it becomes a gallery, which is what it was always called. */
+  .patent-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+    max-height: none;
+    align-content: start;
+  }
+  #coldStorageList {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
+    gap: 0.75rem;
+    align-content: start;
+  }
+}
+
+/* ── very wide: stop the lab becoming one tall ribbon ────────────────────── */
+@media (min-width: 90rem) {
+  #panel-lab.active {          /* .active for the reason given above */
+    display: block;
+    column-width: 30rem;
+    column-gap: 1.5rem;
+    padding: 1rem;
+  }
+}
+
+/* ── narrow: unchanged ───────────────────────────────────────────────────────
+ * Below 64rem nothing above applies, so the phone renders the original
+ * single-column side-panel layout at its original 16px root. That is not a
+ * fallback — it is the design that already works at that width.
+ */

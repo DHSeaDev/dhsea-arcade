@@ -48,6 +48,9 @@ const server = http.createServer(async (req, res) => {
 });
 await new Promise(r => server.listen(PORT, r));
 
+/* Apps are verified on the SAME terms as games — boot, paint, shim, back
+ * control, save-across-reload, namespacing. An entry exempted from the gate
+ * because it is "not a game" is an entry with no gate. */
 const GAMES = [
   ['prism-cascade', 'games/prism-cascade/'],
   ['lumenreel', 'games/lumenreel/ui/'],
@@ -56,6 +59,7 @@ const GAMES = [
   ['emberkeep', 'games/emberkeep/'],
   ['emberkeep-mountain', 'games/emberkeep-mountain/'],
   ['bloom-rush', 'games/bloom-rush/'],
+  ['planet-express-lounge', 'games/planet-express-lounge/'],
 ];
 
 const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ['--no-sandbox','--disable-dev-shm-usage'] });

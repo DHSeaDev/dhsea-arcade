@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="color-scheme" content="dark">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Planet Express Sidebar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="pel.css">
+<link rel="stylesheet" href="pel-fullscreen.css">
+<script src="pe-web-shim.js"></script>
+<script src="pe-web-background.js"></script>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="logo">
+      <div class="logo-ship">🚀</div>
+      <div>
+        <div class="logo-title">PLANET EXPRESS</div>
+        <div class="logo-sub">Like watching Futurama — you pick the topic</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="status-dot" id="statusDot"></div>
+      <button class="icon-btn" id="themeBtn" title="Toggle light/dark mode" aria-label="Toggle theme">🌙</button>
+      <button class="icon-btn" id="refreshBtn" title="Check server">⟳</button>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <div class="tab active" data-tab="chat"     title="Chat with the crew">💬 CHAT</div>
+    <div class="tab" data-tab="autopilot"       title="Crew autopilot — hands-free episode mode">🤖 AUTO</div>
+    <div class="tab" data-tab="lab"             title="Invention lab, news desk & affirmations">🧪 LAB</div>
+    <div class="tab" data-tab="cold"            title="Saved crew highlights">📌 SAVED</div>
+    <div class="tab" data-tab="settings"        title="Voices, cast, provider & data settings">⚙️ SETTINGS</div>
+  </div>
+
+  <!-- NOT READY -->
+  <div class="not-ready-banner" id="notReadyBanner">
+    ⚠️ Enter your API key in ⚙️ Settings to start chatting with the crew.
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       CHAT PANEL
+       ══════════════════════════════════════════════════════════ -->
+  <div class="panel active" id="panel-chat">
+    <!-- Demo mode overlay — visible only when no API key is connected -->
+    <div id="demoChatPanel" style="display:none">
+      <div class="demo-header">
+        <span class="demo-badge">DEMO MODE</span>
+        <span class="demo-header-label">Connect an API key in ⚙️ Settings to chat live with the crew</span>
+      </div>
+      <div id="demoChatLog" class="demo-chatlog"></div>
+      <div class="demo-footer">
+        <button class="demo-next-btn" id="demoNextBtn">Next ›</button>
+        <span class="demo-counter" id="demoCounter">1 / 4</span>
+        <button class="demo-settings-btn" id="demoSettingsBtn">⚙️ Connect API Key →</button>
+      </div>
+    </div>
+    <div id="chatlog">
+      <div class="first-run-card" id="firstRunCard">
+        <div class="first-run-title">Good news, everyone!</div>
+        <p>Go to <strong>⚙️ Settings</strong>, paste your free Groq API key, and press <strong>Save &amp; Connect</strong>.</p>
+        <button class="first-run-settings-btn" id="firstRunSettingsBtn">→ Open Settings</button>
+      </div>
+    </div>
+    <div class="chat-footer">
+      <div class="chaos-banner" id="chaosBanner">💀 CHAOS MODE ACTIVE — crew behaviour is unhinged</div>
+      <div class="chat-action-row">
+        <button class="pdf-btn chat-action-btn" id="chatSavePin" title="Save chat to Cold Storage" disabled>📌 SAVE</button>
+        <button class="pdf-btn chat-action-btn" id="chatSummaryBtn" title="AI Summary → Cold Storage" disabled>📋 SUMMARY</button>
+      </div>
+      <div class="input-row">
+        <textarea class="chat-input" id="chatInput" name="chat" rows="1"
+          autocomplete="off" spellcheck="true"
+          placeholder="What should the crew discuss?"></textarea>
+        <button class="send-btn" id="sendBtn" disabled>SEND</button>
+        <button class="chat-stop-btn" id="chatStopBtn" title="Stop current response"
+                data-pel-class="pel-h0" style="display:none;align-items:center;justify-content:center;border:1px solid var(--system);background:transparent;color:var(--system);cursor:pointer;flex-shrink:0;transition:background .15s">⏹</button>
+        <button class="chat-mute-btn icon-btn" id="chatMuteBtn" title="Mute voices"
+                data-pel-class="pel-h1" style="flex-shrink:0">🔊</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       AUTOPILOT PANEL
+       ══════════════════════════════════════════════════════════ -->
+  <div class="panel" id="panel-autopilot">
+    <div class="ap-card">
+      <h3>🤖 CREW AUTOPILOT</h3>
+      <p>The crew picks a Futurama topic and runs a full sitcom episode — hands free.</p>
+      <div class="ap-btn-row">
+        <button class="ap-toggle off ap-launch-btn" id="apToggle">🚀 LAUNCH AUTOPILOT</button>
+        <button class="ap-ep-summary-btn" id="apEpSummaryBtn"
+          title="AI Episode Summary → Cold Storage">📋 EP SUMMARY</button>
+      </div>
+      <div class="ap-card-footer">
+        <button class="pdf-btn ap-save-btn" id="apPdfBtn" disabled title="Save transcript to Cold Storage">
+          📌 SAVE
+        </button>
+        <button class="icon-btn" id="apPauseBtn" title="Pause / Resume episode"
+                data-pel-class="pel-h2" style="display:none;flex-shrink:0">⏸</button>
+        <button class="mute-btn ap-narrator-btn" title="Mute/unmute crew voices">
+          🔊 ON
+        </button>
+      </div>
+    </div>
+    <div class="chaos-banner" id="chaosBannerAp">💀 CHAOS MODE ACTIVE — crew behaviour is unhinged</div>
+    <!-- Demo mode notice in autopilot — shown instead of live episode when no API key -->
+    <div id="apDemoBanner" data-pel-class="pel-h3" style="display:none;background:color-mix(in srgb,var(--gold) 10%,var(--bg2));border-bottom:1px solid color-mix(in srgb,var(--gold) 30%,transparent);flex-shrink:0">
+      <span data-pel-class="pel-h4" style="color:var(--bg);background:var(--gold)">DEMO</span>
+      <span data-pel-class="pel-h5" style="color:var(--fg2)">Pre-written episode — connect an API key to generate unlimited real episodes</span>
+    </div>
+    <div id="ap-stream">
+      <div class="empty-state" data-pel-class="pel-h6">
+        <p data-pel-class="pel-h7">Crew is standing by…</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       LAB PANEL v3.0
+       ══════════════════════════════════════════════════════════ -->
+  <div class="panel" id="panel-lab">
+
+    <!-- ── PROFESSOR'S INVENTION ─────────────────────────────────── -->
+    <div class="lab-section-card">
+
+      <div class="lab-section-header">
+        <span class="lab-section-icon">🧪</span>
+        <div>
+          <div class="lab-section-title">PROFESSOR'S LAB</div>
+          <div class="lab-section-sub">Patent-pending inventions of questionable safety</div>
+        </div>
+      </div>
+
+      <div class="lab-inv-card" id="labInvCard">
+        <div class="lab-inv-placeholder" id="labInvPlaceholder">
+          The Professor is in his lab…<br>Click below to see today's invention!
+        </div>
+        <div class="lab-inv-text" id="labInvText" style="display:none"></div>
+        <div class="lab-inv-critique" id="labInvCritique" style="display:none"></div>
+      </div>
+
+      <div data-pel-class="pel-h8" style="display:flex">
+        <button class="lab-btn" id="labInventBtn" disabled style="flex:1">⚗️ GENERATE INVENTION</button>
+        <button class="lab-btn lab-discuss-btn" id="labDiscussBtn" disabled
+                style="flex:1;background:var(--leela);color:#fff">
+          💬 DISCUSS WITH CREW
+        </button>
+      </div>
+
+      <div class="lab-doom-bar" id="labDoomBar" style="display:none">
+        <span class="lab-doom-label">DOOM LEVEL</span>
+        <div class="lab-doom-track"><div class="lab-doom-fill" id="labDoomFill"></div></div>
+        <span class="lab-doom-pct" id="labDoomPct">??%</span>
+      </div>
+
+      <div class="lab-note">Invention referenced by the crew in your next chat.</div>
+
+    </div>
+
+    <!-- ── PATENT OFFICE ─────────────────────────────────────────── -->
+    <div class="lab-section-card" id="patentOfficeCard">
+      <div class="lab-section-header">
+        <span class="lab-section-icon">📋</span>
+        <div style="flex:1">
+          <div class="lab-section-title">PATENT OFFICE</div>
+          <div class="lab-section-sub">Filed inventions · <span id="patentCount">0 patents</span></div>
+        </div>
+        <div id="megaInventBtn" style="display:none">
+          <button class="lab-btn" id="labMegaBtn" data-pel-class="pel-h9" style="white-space:nowrap">
+            🔬 MEGA (150 ⚛️)
+          </button>
+        </div>
+      </div>
+
+      <div class="patent-desc">
+        Inventions are auto-archived here (max 10). Scrap any invention to recycle it for ⚛️ and move it to the Scrap Heap. Combine 5 scraps into a free ♻️ Recycled invention.
+      </div>
+
+      <div class="patent-tabs">
+        <button class="patent-tab patent-tab-active" id="patentTabAll"   data-filter="all">ALL</button>
+        <button class="patent-tab" id="patentTabGood"  data-filter="success">✅ SUCCESS</button>
+        <button class="patent-tab" id="patentTabScrap" data-filter="scrap">💀 SCRAP HEAP</button>
+      </div>
+
+      <!-- Recycle button — visible only on Scrap tab with ≥5 items -->
+      <div id="patentRecycleBtn" style="display:none">
+        <button class="lab-btn" data-pel-class="pel-h10" style="background:color-mix(in srgb,var(--green) 15%,var(--bg3));border-color:var(--green);color:var(--green)">
+          ♻️ COMBINE 5 SCRAPS → NEW (free)
+        </button>
+      </div>
+
+      <div id="patentGallery" class="patent-gallery">
+        <div class="patent-empty" id="patentEmpty">
+          No patents filed yet — generate your first invention above.
+        </div>
+      </div>
+    </div>
+
+    <!-- ── DARK MATTER REACTOR ──────────────────────────────────── -->
+    <div class="dm-widget" id="dmWidget">
+      <div class="dm-header">
+        <span class="dm-icon">⚛️</span>
+        <div>
+          <div class="dm-title">DARK MATTER REACTOR</div>
+          <div class="dm-sub">Nibbler-grade fuel — accumulates passively</div>
+        </div>
+        <div class="dm-badge" id="dmRateBadge">+1–7/min</div>
+      </div>
+      <div class="dm-display-row">
+        <div class="dm-display-wrap">
+          <div class="dm-label">DARK MATTER UNITS</div>
+          <div class="dm-readout" id="dmReadout">
+            <span class="dm-digit" id="dm0">0</span><span class="dm-digit" id="dm1">0</span><span class="dm-digit" id="dm2">0</span><span class="dm-digit" id="dm3">0</span><span class="dm-sep">.</span><span class="dm-digit" id="dm4">0</span><span class="dm-digit" id="dm5">0</span><span class="dm-digit" id="dm6">0</span>
+          </div>
+        </div>
+        <div class="dm-spark" id="dmSpark"></div>
+      </div>
+      <div class="dm-footer">
+        <div class="dm-hist-label-row">RECENT ACTIVITY</div>
+        <div id="dmHistory" class="dm-history">
+          <span class="dm-hist-empty">No activity yet</span>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ── CREW AFFIRMATION WIDGET ────────────────────────────────── -->
+    <div class="lab-section-card" data-pel-class="pel-h11" style="overflow:hidden">
+      <div class="lab-section-header" data-pel-class="pel-h12">
+        <span class="lab-section-icon">💬</span>
+        <div>
+          <div class="lab-section-title">CREW WISDOM</div>
+          <div class="lab-section-sub">Words of questionable guidance from the crew</div>
+        </div>
+      </div>
+      <div class="lab-widget-inner">
+        <div class="lab-widget-char">
+          <div class="lab-widget-avatar" id="widgetAvatar" title="Click for new quote">🍕</div>
+          <div>
+            <div class="lab-widget-char-name" id="widgetCharName">PHILIP J. FRY</div>
+            <div class="lab-widget-char-sub" id="widgetCharSub">The Zen of Simple Minds</div>
+          </div>
+        </div>
+        <div class="lab-widget-quote" id="widgetQuote">Loading crew wisdom…</div>
+        <div class="lab-widget-footer">
+          <div class="lab-widget-controls">
+            <button class="lab-widget-btn" id="widgetNextBtn">▶ NEXT</button>
+            <button class="lab-widget-btn" id="widgetPauseBtn">⏸ PAUSE</button>
+          </div>
+          <div class="lab-widget-meta">
+            <div class="lab-widget-status-dot" id="widgetStatusDot"></div>
+            <span id="widgetStatusText">CYCLING</span>
+            <span style="color:var(--fg3)">•</span>
+            <span id="widgetQuoteId">#001</span>
+          </div>
+        </div>
+      </div>
+    </div><!-- /crew-wisdom section-card -->
+
+
+
+  <!-- ══════════════════════════════════════════════════════════
+       COLD STORAGE PANEL
+       ══════════════════════════════════════════════════════════ -->
+    </div><!-- /panel-lab -->
+
+  <div class="panel" id="panel-cold">
+    <div class="lab-header">
+      <span class="lab-header-icon">📌</span>
+      <div>
+        <div class="lab-title">COLD STORAGE</div>
+        <div class="lab-sub">Pinned moments from the Planet Express archive</div>
+      </div>
+    </div>
+    <div data-pel-class="pel-h13" style="color:var(--fg2);border-bottom:1px solid var(--border)">
+      Cold Storage saves conversations, AI summaries, and pinned crew lines you want to keep.
+      Hit 📌 on any message to pin it, or use the SAVE and SUMMARY buttons in chat.
+      Export any saved item as a printable document with the 📄 button.
+    </div>
+    <div class="cold-storage-toolbar">
+      <span data-pel-class="pel-h14" style="color:var(--fg3)">
+        SAVED EXCHANGES
+      </span>
+      <button class="cold-del-all-btn" id="coldDelAllBtn">🗑️ DELETE ALL</button>
+    </div>
+    <div id="coldStorageList">
+      <div class="cold-empty">No saved exchanges yet.<br>Pin great moments using the 📌 button on any message.</div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       SETTINGS PANEL
+       ══════════════════════════════════════════════════════════ -->
+  <div class="panel" id="panel-settings">
+    <!-- ── CHAOS MODE ─────────────────────────────────────────── -->
+    <div class="s-section">
+      <div class="s-title">💥 Chaos Mode</div>
+      <div data-pel-class="pel-h15" style="color:var(--fg2)">
+        The crew becomes ruder, louder, and less willing to stay on topic.
+        Bender escalates. Professor forgets what's dangerous. Zoidberg cries.
+      </div>
+      <div data-pel-class="pel-h16" style="display:flex;align-items:center;justify-content:space-between">
+        <span data-pel-class="pel-h7" style="color:var(--fg2)">💀 Enable Chaos</span>
+        <label class="pill-toggle">
+          <input type="checkbox" id="chaosToggle">
+          <span class="pill-track" style="--char-color:#E06C75"></span>
+        </label>
+      </div>
+    </div>
+
+    <!-- ── THEME ──────────────────────────────────────────────── -->
+    <div class="s-section">
+      <div class="s-title">🎨 Appearance</div>
+      <div data-pel-class="pel-h16" style="display:flex;align-items:center;justify-content:space-between">
+        <span data-pel-class="pel-h7" style="color:var(--fg2)">☀️ Light Mode</span>
+        <label class="pill-toggle">
+          <input type="checkbox" id="themeToggle">
+          <span class="pill-track" style="--char-color:var(--gold)"></span>
+        </label>
+      </div>
+    </div>
+
+    <!-- ── CAST TOGGLES (spoiler) ────────────────────────────────── -->
+    <div class="s-section" data-pel-class="pel-h11" style="overflow:hidden">
+      <details id="castSpoiler">
+        <summary data-pel-class="pel-h17" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;list-style:none;color:var(--fg2);text-transform:uppercase;background:var(--bg2);transition:background .2s">
+          <span>👥 Cast &amp; Crew</span>
+          <span id="castSpoilerArrow" data-pel-class="pel-h18" style="transition:transform .25s">▶</span>
+        </summary>
+        <div data-pel-class="pel-h19" style="border-top:1px solid var(--border)">
+          <div data-pel-class="pel-h20" style="color:var(--fg2)">
+            Toggle any character on or off. All 18 can speak in chat and autopilot.
+          </div>
+          <div class="cast-grid" id="castGrid"><!-- Populated by JS --></div>
+        </div>
+      </details>
+    </div>
+
+    <!-- ── DELIVERY REWARDS (spoiler) ────────────────────────────── -->
+    <div class="s-section" data-pel-class="pel-h11" style="overflow:hidden">
+      <details id="crewProgressSpoiler">
+        <summary data-pel-class="pel-h17" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;list-style:none;color:var(--fg2);text-transform:uppercase;background:var(--bg2);transition:background .2s" id="crewProgressSummary">
+          <span>🚀 Delivery Log &amp; Rewards</span>
+          <span class="crew-progress-arrow" data-pel-class="pel-h18" style="transition:transform .25s">▶</span>
+        </summary>
+        <div data-pel-class="pel-h19" style="border-top:1px solid var(--border)">
+          <div id="crewProgressList">
+            <div data-pel-class="pel-h21" style="color:var(--fg3);font-style:italic">Loading crew records…</div>
+          </div>
+        </div>
+      </details>
+    </div>
+
+    <!-- ── VOICE ENGINE ─────────────────────────────────────────── -->
+    <div class="s-section">
+      <div class="s-title">🎙️ Voice Engine</div>
+      <div data-pel-class="pel-h22" style="color:var(--fg2)">
+        Voice priority: <strong style="color:var(--fg)">ElevenLabs</strong> (if configured below) →
+        <strong style="color:var(--fg)">OS voices</strong> (Windows/macOS, richer, no latency) →
+        <strong style="color:var(--fg)">Chrome built-in voices</strong> (always available fallback).
+      </div>
+      <div data-pel-class="pel-h16" style="display:flex;align-items:center;justify-content:space-between">
+        <span data-pel-class="pel-h7" style="color:var(--fg2)">🎤 Chrome voices only</span>
+        <label class="pill-toggle">
+          <input type="checkbox" id="chromeVoiceOverride">
+          <span class="pill-track" style="--char-color:#4FC3F7"></span>
+        </label>
+      </div>
+      <div id="voiceEngineStatus" data-pel-class="pel-h23" style="color:var(--fg3)">
+        Detecting voices…
+      </div>
+    </div>
+
+    <!-- ── ELEVENLABS (premium voice, spoiler) ──────────────────────── -->
+    <div class="s-section" data-pel-class="pel-h11" style="overflow:hidden">
+      <details id="elevenLabsSpoiler">
+        <summary data-pel-class="pel-h17" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;list-style:none;color:var(--fg2);text-transform:uppercase;background:var(--bg2);transition:background .2s" id="elevenLabsSummary">
+          <span>💎 ElevenLabs (Premium Voices)</span>
+          <span id="elevenLabsSpoilerArrow" data-pel-class="pel-h18" style="transition:transform .25s">▶</span>
+        </summary>
+        <div data-pel-class="pel-h19" style="border-top:1px solid var(--border)">
+          <div data-pel-class="pel-h24" style="color:var(--fg2)">
+            <strong style="color:var(--gold)">Optional premium tier:</strong> ElevenLabs gives the crew
+            expressive, high-quality voices. Get an API key at
+            <a href="https://elevenlabs.io" target="_blank" rel="noopener" style="color:var(--gold)">elevenlabs.io</a> —
+            a free tier is available. Sensible default voices are already assigned to all 6 categories below;
+            browse <a href="https://elevenlabs.io/app/voice-lab" target="_blank" rel="noopener" style="color:var(--gold)">the Voice Library</a>
+            and paste a voice ID to customize any category.
+            <span style="color:var(--fg3)">Beyond the free tier, usage is billed to your own ElevenLabs account.</span>
+          </div>
+
+          <div class="field" id="elevenLabsKeyField">
+            <label>ElevenLabs API Key</label>
+            <input type="password" id="elevenLabsKey" placeholder="ElevenLabs API key">
+          </div>
+          <div id="elevenLabsKeyStatus" data-pel-class="pel-h25" style="color:var(--fg3)"></div>
+
+          <div data-pel-class="pel-h26" style="color:var(--fg3);text-transform:uppercase">Voice IDs — per category (leave blank for default)</div>
+
+          <div class="field">
+            <label>Warm Male <span style="color:var(--fg3)">— Fry, Prof, Zoidberg</span></label>
+            <input type="text" id="elVoiceWarmMale" placeholder="Default: Antoni (ErXwobaYiN019PkySvjV)">
+          </div>
+          <div class="field">
+            <label>Deep Male <span style="color:var(--fg3)">— Bender, Zapp, Morbo, Nixon, Robot Santa, Lrrr</span></label>
+            <input type="text" id="elVoiceDeepMale" placeholder="Default: Adam (pNInz6obpgDQGcFmaJgB)">
+          </div>
+          <div class="field">
+            <label>UK Male <span style="color:var(--fg3)">— Hermes, Kif, Calculon, Hedonismbot, Narrator</span></label>
+            <input type="text" id="elVoiceUkMale" placeholder="Default: Daniel (onwK4e9ZLuTAKqWW03F9)">
+          </div>
+          <div class="field">
+            <label>Bright Female <span style="color:var(--fg3)">— Amy, Linda</span></label>
+            <input type="text" id="elVoiceBrightFemale" placeholder="Default: Rachel (21m00Tcm4TlvDq8ikWAM)">
+          </div>
+          <div class="field">
+            <label>Warm Female <span style="color:var(--fg3)">— Leela, Mom, LaBarbara</span></label>
+            <input type="text" id="elVoiceWarmFemale" placeholder="Default: Sarah (EXAVITQu4vr4xnSDxMaL)">
+          </div>
+          <div class="field">
+            <label>UK Female <span style="color:var(--fg3)">— available, not used by main cast</span></label>
+            <input type="text" id="elVoiceUkFemale" placeholder="Default: Charlotte (XB0fDUnXU5powFXDhCwa)">
+          </div>
+
+          <button class="save-config-btn" id="saveElevenLabsBtn" data-pel-class="pel-h27">💾 SAVE VOICE CONFIG</button>
+          <div class="settings-msg" id="elevenLabsMsg"></div>
+        </div>
+      </details>
+    </div>
+
+    <!-- ── SPEED & DISPLAY (spoiler) ──────────────────────────────── -->
+    <div class="s-section" data-pel-class="pel-h11" style="overflow:hidden">
+      <details id="speedSpoiler">
+        <summary data-pel-class="pel-h17" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;list-style:none;color:var(--fg2);text-transform:uppercase;background:var(--bg2);transition:background .2s">
+          <span>⏩ Speed &amp; Display</span>
+          <span id="speedSpoilerArrow" data-pel-class="pel-h18" style="transition:transform .25s">▶</span>
+        </summary>
+        <div data-pel-class="pel-h28" style="border-top:1px solid var(--border)">
+          <div data-pel-class="pel-h29" style="color:var(--fg2)">
+            Controls how fast text types, how fast the crew speak, master voice volume, and chat font size.
+          </div>
+
+          <div class="speed-row">
+            <div class="speed-label-row">
+              <span class="speed-label">Text speed (WPM)</span>
+              <span class="speed-value" id="speedDisplay">200 wpm</span>
+            </div>
+            <input type="range" class="speed-slider" id="speedSlider"
+              min="100" max="400" step="10" value="200">
+            <div class="speed-marks">
+              <span>100</span><span data-pel-class="pel-h30">250</span><span>400</span>
+            </div>
+          </div>
+
+          <div class="speed-row" data-pel-class="pel-h31">
+            <div class="speed-label-row">
+              <span class="speed-label">Voice speed</span>
+              <span class="speed-value" id="voiceSpeedDisplay">1.2×</span>
+            </div>
+            <input type="range" class="speed-slider" id="voiceSpeedSlider"
+              min="0.8" max="2.0" step="0.1" value="1.2">
+            <div class="speed-marks">
+              <span>Slow</span><span data-pel-class="pel-h30">Natural</span><span>Fast</span>
+            </div>
+          </div>
+
+          <div class="speed-row" data-pel-class="pel-h31">
+            <div class="speed-label-row">
+              <span class="speed-label">🔊 Master volume</span>
+              <span class="speed-value" id="volumeDisplay">100%</span>
+            </div>
+            <input type="range" class="speed-slider" id="volumeSlider"
+              min="0" max="1" step="0.05" value="1">
+            <div class="speed-marks">
+              <span>Mute</span><span data-pel-class="pel-h30">50%</span><span>Full</span>
+            </div>
+          </div>
+
+          <div class="speed-row" data-pel-class="pel-h31">
+            <div class="speed-label-row">
+              <span class="speed-label">Aa Chat font size</span>
+              <span class="speed-value" id="fontDisplay">13 px</span>
+            </div>
+            <input type="range" class="speed-slider" id="fontSlider"
+              min="10" max="20" step="1" value="13">
+            <div class="speed-marks">
+              <span>Small</span>
+              <span data-pel-class="pel-h30">Default</span>
+              <span>Large</span>
+            </div>
+          </div>
+        </div>
+      </details>
+    </div>
+
+        <!-- settingsDot kept for JS status wiring — hidden, inside Provider section -->
+
+    <!-- ── PROVIDER & MODEL ─────────────────────────────────────── -->
+    <div class="s-section">
+      <div class="s-title" data-pel-class="pel-h8" style="display:flex;align-items:center">
+        Provider &amp; Model
+        <div class="status-dot" id="settingsDot" data-pel-class="pel-h32" style="background:var(--system);flex-shrink:0"></div>
+      </div>
+      <div data-pel-class="pel-h33" style="color:var(--fg2)">
+        <strong style="color:var(--gold)">Recommended:</strong> Groq with llama-3.3-70b-versatile — fastest, free tier, best character voice.
+        OpenRouter and Gemini for alternative providers; some models require paid API keys.
+      </div>
+      <div class="field">
+        <label>Provider</label>
+        <select id="providerSelect">
+          <option value="Groq">Groq (fast &amp; free — recommended)</option>
+          <option value="OpenRouter">OpenRouter</option>
+          <option value="Gemini">Gemini</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Model</label>
+        <select id="modelSelect"></select>
+      </div>
+    </div>
+
+    <!-- ── API KEYS ────────────────────────────────────────────── -->
+    <div class="s-section">
+      <div class="s-title">API Keys</div>
+      <div data-pel-class="pel-h24" style="color:var(--fg2)">
+        Groq is free. Get your key at <a href="https://console.groq.com" target="_blank" rel="noopener" style="color:var(--gold)">console.groq.com</a> — takes 30 seconds.
+      </div>
+      <div class="field" id="groqKeyField">
+        <label>Groq API Key</label>
+        <input type="password" id="groqKey" placeholder="gsk_… (free at console.groq.com)">
+      </div>
+      <div class="field" id="orKeyField" style="display:none">
+        <label>OpenRouter API Key</label>
+        <input type="password" id="orKey" placeholder="sk-or-… (openrouter.ai/keys)">
+      </div>
+      <div class="field" id="gemKeyField" style="display:none">
+        <label>Gemini API Key</label>
+        <input type="password" id="gemKey" placeholder="AIza… (aistudio.google.com)">
+      </div>
+      <button class="save-config-btn" id="saveConfigBtn">💾 SAVE &amp; CONNECT</button>
+      <div class="settings-msg" id="settingsMsg"></div>
+      <button class="save-config-btn" id="testConnBtn"
+        data-pel-class="pel-h34" style="background:transparent;border:1px solid var(--border);color:var(--fg2);cursor:pointer;transition:border-color .2s,color .2s">
+        🔌 TEST CONNECTION
+      </button>
+    </div>
+
+
+    <!-- ── YOUR DATA ──────────────────────────────────────────── -->
+    <div class="s-section">
+      <div class="s-title">🗄️ Your Data</div>
+      <div data-pel-class="pel-h15" style="color:var(--fg2)">
+        All conversation data is stored locally in your browser's IndexedDB — never sent to any server beyond your chosen LLM provider.
+      </div>
+      <div id="dataSummary">
+        <div data-pel-class="pel-h18" style="color:var(--fg3);font-style:italic">Loading…</div>
+      </div>
+      <button class="data-clear-btn" id="clearAllBtn" data-pel-class="pel-h35">🗑️ CLEAR ALL DATA</button>
+    </div>
+
+    <!-- ── LEGAL & DISCLAIMER ──────────────────────────────────── -->
+    <div class="s-section legal-section">
+      <div class="s-title">⚖️ Legal &amp; Intellectual Property</div>
+
+      <div class="legal-badge">FAN PROJECT — NOT FOR COMMERCIAL USE</div>
+
+      <p class="legal-body">
+        <strong>Futurama</strong>, all character names, likenesses, catchphrases,
+        and related elements are the intellectual property of
+        <strong>The Walt Disney Company</strong> and its subsidiaries, including
+        <strong>20th Television Animation</strong> (formerly 20th Century Fox
+        Television). The series is currently distributed by
+        <strong>Hulu</strong>, a Disney-majority-owned service.
+      </p>
+
+      <p class="legal-body">
+        This application is an <strong>independent, non-commercial fan project</strong>
+        created for personal entertainment and educational purposes only.
+        It is not affiliated with, endorsed by, sponsored by, or in any way
+        officially connected to Disney, Hulu, 20th Television Animation,
+        Matt Groening, or any rights holders associated with Futurama.
+      </p>
+
+      <p class="legal-body">
+        No copyright infringement is intended. All character simulations are
+        <strong>satirical parody</strong> protected under fair use principles
+        (17 U.S.C. § 107). Character dialogue is AI-generated and does not
+        represent the views of the original creators, voice actors, or rights holders.
+      </p>
+
+      <p class="legal-body">
+        This tool is provided <strong>"as is"</strong> without warranty of any kind.
+        The developer assumes no liability for content generated by third-party
+        AI models (Groq, OpenRouter, Gemini) used via user-supplied API keys.
+        You are responsible for your own API usage and associated costs.
+      </p>
+
+      <p class="legal-body">
+        If you are a rights holder and have concerns about this project,
+        please contact the developer directly before issuing any claims.
+        This project will be modified or taken down upon legitimate request.
+      </p>
+
+      <p class="legal-body" data-pel-class="pel-h35">
+        To watch the official series, visit
+        <a href="https://www.hulu.com/series/futurama-6f5a394b-0f16-466e-a1b3-c14ccf7e1c23" target="_blank" rel="noopener noreferrer" style="color:var(--gold)">Futurama on Hulu</a>
+        or learn more at
+        <a href="https://www.disneyplus.com" target="_blank" rel="noopener noreferrer" style="color:var(--gold)">Disney+</a>.
+        Supporting the official release supports future episodes.
+      </p>
+      <p class="legal-body">
+        Fan content policy reference:
+        <a href="https://support.disney.com/hc/en-us" target="_blank" rel="noopener noreferrer" data-pel-class="pel-h36" style="color:var(--fg2)">Disney Support</a>.
+        This project will be modified or removed upon any legitimate request from rights holders.
+      </p>
+      <div class="legal-footer">
+        Planet Express Lounge — Non-commercial fan project — v3.0<br>
+        Futurama © 2023 The Curiosity Company and 20th Television Animation,<br>
+        a subsidiary of Disney Television Studios. Distributed by Hulu.<br>
+        All rights reserved by their respective owners. Not affiliated with Disney, Hulu, or 20th Television Animation.
+      </div>
+    </div>
+
+    <!-- ── PRIVACY & SETUP GUIDE ───────────────────────────── -->
+    <div class="s-section">
+      <div class="s-title">📋 Privacy &amp; Setup</div>
+      <div data-pel-class="pel-h37" style="color:var(--fg2)">
+        <strong style="color:var(--fg)">Quick Start:</strong><br>
+        1. Get a free API key at
+        <a href="https://console.groq.com" target="_blank" rel="noopener"
+           style="color:var(--gold)">console.groq.com</a> (30 seconds, no card)<br>
+        2. Paste it above → Save &amp; Connect<br>
+        3. The status dot turns green → start chatting<br><br>
+        <strong style="color:var(--fg)">Your data:</strong> Everything stays in your browser.
+        No analytics. No telemetry. Your API key is only sent to your chosen provider.
+      </div>
+      <a href="privacy_policy.html" target="_blank" rel="noopener"
+         data-pel-class="pel-h38" style="display:block;color:var(--gold);text-decoration:none">
+        📋 View full Privacy Policy →
+      </a>
+    </div>
+
+    <!-- ── ABOUT ──────────────────────────────────────────────── -->
+    <div class="s-section">
+      <div class="s-title">ℹ️ About</div>
+      <div data-pel-class="pel-h20" style="color:var(--fg2)">
+        Planet Express Lounge <strong style="color:var(--fg)">v3.1</strong> — Unofficial fan project.<br>
+        Futurama © Disney / 20th Television Animation.
+      </div>
+      <button id="showWelcomeBtn" data-pel-class="pel-h39" style="border:1px solid var(--border);background:var(--bg3);color:var(--fg2);cursor:pointer;transition:border-color .2s,color .2s">📖 SETUP GUIDE &amp; LEGAL</button>
+    </div>
+  </div><!-- /panel-settings -->
+
+  <!-- STATUS BAR -->
+  <div class="statusbar" id="statusBar">Ready — Good news, everyone!</div>
+
+</div><!-- /app -->
+<script type="module" src="sidepanel.js"></script>
+<script type="module" src="lab.js"></script>
+</body>
+</html>

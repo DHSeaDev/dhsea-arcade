@@ -22,11 +22,24 @@ const SRC = path.join(ROOT, 'src-games');
 const OUT = path.join(ROOT, 'dist');
 
 /**
- * One row per game. `entry` is the document that IS the game — never the popup.
- * `drop` is the launcher layer: files whose only job was to open the entry
- * document from a toolbar button. On the web the URL does that.
+ * One row per shipped thing. `entry` is the document that IS it — never the
+ * popup. `drop` is the launcher layer: files whose only job was to open the
+ * entry document from a toolbar button. On the web the URL does that.
+ *
+ * `type` is 'game' (default) or 'app'. It is not cosmetic — it decides the
+ * structured data. A game is co-typed VideoGame + WebApplication; an app is
+ * WebApplication ONLY. Asserting VideoGame on a chat client is a false claim
+ * made to a search engine, and this project's own notes name inventing
+ * structured data as the failure mode to avoid.
+ *
+ * `shims` names the compatibility scripts injected ahead of the entry's own.
+ * It defaults to the arcade shim. It exists because the seven games needed
+ * exactly one shim and Planet Express does not: it uses chrome.tts and a real
+ * chrome.runtime message bus, neither of which shared/chrome-shim.js provides —
+ * that file seats a NO-OP runtime.onMessage, which is worse than absent because
+ * it looks present. See src-games/planet-express-lounge/pe-web-shim.js.
  */
-const GAMES = [
+const ENTRIES = [
   {
     id: 'prism-cascade', name: 'Prism Cascade', tagline: 'Charge, shatter, splash. 100 levels of physics arcade.',
     seoTitle: 'Prism Cascade — free physics arcade game in your browser',
@@ -85,7 +98,27 @@ const GAMES = [
     genre: 'Simulation',
     dir: 'bloom-rush', entry: 'index.html', drop: ['index.html.orig'],
   },
+  {
+    id: 'planet-express-lounge', name: 'Planet Express Lounge',
+    tagline: 'An AI sitcom engine. Chat with the crew, or let them run an episode.',
+    type: 'app', appCategory: 'EntertainmentApplication',
+    seoTitle: 'Planet Express Lounge — an AI sitcom engine in your browser',
+    seoDesc: 'Chat with an 18-strong animated-sitcom cast, or press one button and watch them run a full episode unaided — cold open to punchline. Bring your own API key; a scripted demo runs without one.',
+    genre: 'Entertainment',
+    dir: 'planet-express-lounge', entry: 'app.html',
+    /* Its own shim, NOT shared/chrome-shim.js. Loading both would be actively
+     * harmful: the arcade shim would win the runtime.onMessage property and
+     * silently kill the Dark Matter economy. */
+    shims: ['pe-web-shim.js', 'pe-web-background.js'],
+    drop: ['popup.html', 'popup.js', 'background.js', 'manifest.json', 'README.md', 'store_listing_description.txt'],
+  },
 ];
+
+/* Derived views. Every downstream consumer reads one of these, never ENTRIES
+ * directly, so a row can never be counted as a game in one place and an app in
+ * another. */
+const GAMES = ENTRIES.filter(e => e.type !== 'app');
+const APPS  = ENTRIES.filter(e => e.type === 'app');
 
 /** Files/dirs never shipped, whatever a game row says. */
 const ALWAYS_DROP = new Set(['manifest.json', 'store', 'Assetts', '.git', 'node_modules']);
@@ -112,21 +145,30 @@ const ALWAYS_DROP = new Set(['manifest.json', 'store', 'Assetts', '.git', 'node_
  * a game with no seoTitle fails the build rather than shipping bare.
  */
 function seoHead(game, url) {
+  const isApp = game.type === 'app';
   const t = game.seoTitle, d = game.seoDesc;
   if (!t || !d) throw new Error(`${game.id}: seoTitle/seoDesc required — a page in the sitemap must not ship bare`);
   const abs = ORIGIN + '/' + url;
   const esc = (x) => x.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-  /* Co-typed VideoGame + WebApplication, matching the convention already used on
-   * every showcase page of dhseadev.online. No ratings are asserted — there are
-   * no verified ones, and inventing them is the failure mode this project's
-   * own notes call out by name. */
+  /* Games are co-typed VideoGame + WebApplication, matching the convention on
+   * every showcase page of dhseadev.online. Apps are WebApplication ONLY —
+   * asserting VideoGame on a chat client would be a false claim, and it would be
+   * the same class of defect as the invented aggregateRating this project has
+   * always refused to emit. No ratings are asserted for either.
+   *
+   * browserRequirements also differs and is not boilerplate: the games need
+   * HTML5 canvas, and an app that has no canvas must not claim to require one. */
   const ld = {
     '@context': 'https://schema.org',
     '@graph': [
-      { '@type': ['VideoGame', 'WebApplication'], name: game.name, url: abs,
-        description: d, genre: game.genre, applicationCategory: 'GameApplication',
+      { '@type': isApp ? 'WebApplication' : ['VideoGame', 'WebApplication'],
+        name: game.name, url: abs,
+        description: d, genre: game.genre,
+        applicationCategory: isApp ? (game.appCategory || 'WebApplication') : 'GameApplication',
         operatingSystem: 'Any modern web browser',
-        browserRequirements: 'Requires JavaScript and HTML5 canvas',
+        browserRequirements: isApp
+          ? 'Requires JavaScript. Speech output uses the browser Web Speech API.'
+          : 'Requires JavaScript and HTML5 canvas',
         offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
         author: { '@type': 'Person', name: 'Donnie Harding', url: 'https://dhseadev.online/' },
         isAccessibleForFree: true, inLanguage: 'en' },
@@ -151,7 +193,13 @@ function seoHead(game, url) {
 
 function injectShim(html, game, depth, url) {
   const up = '../'.repeat(depth);
-  const tag = `<script src="${up}shared/chrome-shim.js" data-game-id="${game.id}"></script>`;
+  /* Shims default to the shared arcade one. An entry that names its own gets
+   * ONLY its own — never both. Two shims racing for the same chrome.* property
+   * is decided by script order, and the loser fails silently. */
+  const tag = (game.shims
+    ? game.shims.map(f => `<script src="${f}" data-ns="${game.id}"></script>`)
+    : [`<script src="${up}shared/chrome-shim.js" data-game-id="${game.id}"></script>`]
+  ).join('\n');
   const icon = `<link rel="icon" href="${up}favicon.svg" type="image/svg+xml">`;
   const backbar = icon + `\n<link rel="stylesheet" href="${up}shared/arcade-bar.css">\n` +
                   `<script src="${up}shared/arcade-bar.js" defer data-game-name="${game.name.replace(/"/g, '&quot;')}"></script>`;
@@ -234,21 +282,30 @@ await cp(path.join(ROOT, 'shared'), path.join(OUT, 'shared'), {
 });
 
 const built = [];
-for (const g of GAMES) {
+for (const g of ENTRIES) {
   built.push(await copyGame(g));
-  console.log(`  built ${g.id}`);
+  console.log(`  built ${g.id}${g.type === 'app' ? ' (app)' : ''}`);
 }
+/* Lookup by id, not by array index. The old code indexed `built[i]` against the
+ * GAMES array — correct only while the two were the same list in the same
+ * order. Splitting games from apps breaks that silently: every card would still
+ * render, each pointing at the wrong URL. */
+const urlOf = (id) => {
+  const row = built.find(b => b.id === id);
+  if (!row) throw new Error(`${id}: built row missing — the index would link to a page that does not exist`);
+  return row.url;
+};
 
 // The index is generated from the same GAMES table the build uses, so a game can
 // never be shipped-but-unlisted or listed-but-unshipped.
-const indexHtml = (await readFile(path.join(ROOT, 'shared', 'index.template.html'), 'utf8'))
-  /* The card is an <article>, NOT an <a>. The star buttons and the launch link
-   * are siblings: a button nested inside an anchor makes the parser split the
-   * card into two elements, which is a defect this project has already shipped
-   * once (the PLAYABLE chip on dhseadev.online /projects/).
-   * The can-tally / can-rate ids ARE the playhtml sync key — renaming one
-   * orphans its accumulated counts with no migration path. */
-  .replace('<!--CARDS-->', GAMES.map((g, i) => `      <article class="g-card">
+/* The card is an <article>, NOT an <a>. The star buttons and the launch link
+ * are siblings: a button nested inside an anchor makes the parser split the
+ * card into two elements, which is a defect this project has already shipped
+ * once (the PLAYABLE chip on dhseadev.online /projects/).
+ * The can-tally / can-rate ids ARE the playhtml sync key — renaming one
+ * orphans its accumulated counts with no migration path, so an entry moving
+ * between the games and apps sections keeps its counts. */
+  const card = (g) => `      <article class="g-card">
         <span class="g-name">${g.name}</span>
         <span class="g-tag">${g.tagline}</span>
         <div class="g-social">
@@ -258,9 +315,18 @@ ${[1, 2, 3, 4, 5].map(n => `            <button class="g-star" type="button" ari
             <span class="g-avg"></span>
           </div>
         </div>
-        <a class="g-go" href="${built[i].url}">PLAY <span aria-hidden="true">&rarr;</span></a>
-      </article>`).join('\n'))
-  .replace('<!--COUNT-->', String(GAMES.length));
+        <a class="g-go" href="${urlOf(g.id)}">${g.type === 'app' ? 'OPEN' : 'PLAY'} <span aria-hidden="true">&rarr;</span></a>
+      </article>`;
+
+const indexHtml = (await readFile(path.join(ROOT, 'shared', 'index.template.html'), 'utf8'))
+  .replace('<!--CARDS-->', GAMES.map(card).join('\n'))
+  .replace('<!--APPS-->', APPS.map(card).join('\n'))
+  .replace(/<!--COUNT-->/g, String(GAMES.length))
+  .replace(/<!--APPCOUNT-->/g, String(APPS.length))
+  /* The apps section is removed entirely when there are none, rather than
+   * shipping an empty heading with a "0 apps" label under it. */
+  .replace(/<!--APPS_SECTION_START-->([\s\S]*?)<!--APPS_SECTION_END-->/,
+           APPS.length ? '$1' : '');
 await writeFile(path.join(OUT, 'index.html'), indexHtml);
 
 /* Bundle playhtml locally. Loading it from unpkg would mean allowing a
@@ -301,13 +367,16 @@ await cp(path.join(ROOT, 'public'), OUT, { recursive: true });
     '@graph': [
       { '@type': 'CollectionPage', '@id': ORIGIN + '/', name: 'DHSeaDev Arcade',
         url: ORIGIN + '/',
-        description: 'Seven browser games by Donnie Harding. Free, no install, no account, no tracking.',
+        description: `${GAMES.length} browser games and ${APPS.length} browser app${APPS.length === 1 ? '' : 's'} by Donnie Harding. Free, no install, no account, no tracking.`,
         inLanguage: 'en',
         isPartOf: { '@type': 'WebSite', name: 'DHSeaDev Arcade', url: ORIGIN + '/' },
         about: { '@type': 'Person', name: 'Donnie Harding', url: 'https://dhseadev.online/' },
-        mainEntity: { '@type': 'ItemList', numberOfItems: GAMES.length,
-          itemListElement: GAMES.map((g, i) => ({ '@type': 'ListItem', position: i + 1,
-            name: g.name, url: ORIGIN + '/' + built[i].url })) } },
+        /* The ItemList covers EVERYTHING indexed, games and apps alike. Listing
+         * only the games while sitemap.xml lists both is exactly the drift these
+         * tables are generated from one source to prevent. */
+        mainEntity: { '@type': 'ItemList', numberOfItems: ENTRIES.length,
+          itemListElement: ENTRIES.map((g, i) => ({ '@type': 'ListItem', position: i + 1,
+            name: g.name, url: ORIGIN + '/' + urlOf(g.id) })) } },
     ],
   };
   idx = idx.replace('</head>', '<script type="application/ld+json">' + JSON.stringify(graph) + '<\/script>\n</head>');
@@ -319,22 +388,35 @@ await cp(path.join(ROOT, 'public'), OUT, { recursive: true });
   const llms = [
     '# DHSeaDev Arcade',
     '',
-    '> Seven browser games by Donnie Harding (DHSeaDev). Every one began as a Chrome',
-    '> extension and now runs as an ordinary web page. Free, no install, no account,',
-    '> no tracking. Progress saves in the visitor\'s own browser via localStorage.',
+    `> ${GAMES.length} browser games and ${APPS.length} browser app${APPS.length === 1 ? '' : 's'} by Donnie Harding`,
+    '> (DHSeaDev). Every one began as a Chrome extension and now runs as an ordinary',
+    '> web page. Free, no install, no account, no tracking. Progress saves in the',
+    '> visitor\'s own browser via localStorage.',
     '',
     '## Games',
     '',
-    ...GAMES.map((g, i) => '- [' + g.name + '](' + ORIGIN + '/' + built[i].url + '): ' + g.seoDesc),
+    ...GAMES.map(g => '- [' + g.name + '](' + ORIGIN + '/' + urlOf(g.id) + '): ' + g.seoDesc),
     '',
+    ...(APPS.length ? [
+      '## Apps',
+      '',
+      '> Not games. Same origin, same rules, different shape.',
+      '',
+      ...APPS.map(g => '- [' + g.name + '](' + ORIGIN + '/' + urlOf(g.id) + '): ' + g.seoDesc),
+      '',
+    ] : []),
     '## Facts',
     '',
     '- Author: Donnie Harding, https://dhseadev.online/',
     '- Cost: free. No accounts, no payments, no advertising, no third-party trackers.',
     '- Data: game progress is stored only in the visitor\'s browser and never transmitted.',
-    '- The one exception is Veilfall\'s optional improvised dialogue, which calls Groq',
-    '  with a key the player supplies themselves. It is off by default and the game is',
-    '  complete without it.',
+    '- Two exceptions, both optional and both using a key the visitor supplies',
+    '  themselves: Veilfall\'s improvised dialogue (off by default; the game is',
+    '  complete without it) and Planet Express Lounge, which is an AI chat app and',
+    '  needs a key for live conversation — it ships a scripted demo that runs',
+    '  without one.',
+    '- No key is ever transmitted to the developer. A key is held in the visitor\'s',
+    '  own browser and sent only to the AI provider the visitor chose.',
     '- Source: each game began as a Chrome MV3 extension; the web build replaces the',
     '  extension storage API with a browser-local shim and ships no other change.',
     '',
@@ -351,4 +433,4 @@ await writeFile(path.join(OUT, 'sitemap.xml'),
   urls.map(u => `  <url><loc>${ORIGIN}${u}</loc></url>`).join('\n') +
   '\n</urlset>\n');
 
-console.log(`\n${built.length} games, dist = ${(await dirSize(OUT) / 1048576).toFixed(2)} MB`);
+console.log(`\n${GAMES.length} games + ${APPS.length} app${APPS.length === 1 ? '' : 's'}, dist = ${(await dirSize(OUT) / 1048576).toFixed(2)} MB`);

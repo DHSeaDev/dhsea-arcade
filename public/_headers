@@ -6,14 +6,34 @@
 # them. Bloom Rush's two inline <script> blocks are extracted to a file at build
 # time so it does not need a carve-out either.
 #
-# connect-src names exactly two third-party destinations and no more:
-#   api.groq.com     — Veilfall's optional Tier 2, called with the PLAYER'S own key
-#   api.playhtml.fun — the sync socket behind the arcade's shared play counts and
-#                      star ratings (playhtml is BUNDLED from npm, not loaded from
-#                      a CDN, so script-src stays 'self')
-# Pinning both means a future dependency cannot quietly add a third.
+# connect-src names every third-party destination explicitly and no more:
+#   api.groq.com                       Veilfall's optional Tier 2 AND Planet Express
+#                                      Lounge's default provider — both called with
+#                                      the VISITOR'S own key, never a shipped one
+#   openrouter.ai                      Planet Express Lounge, alternate provider
+#   generativelanguage.googleapis.com  Planet Express Lounge, Gemini provider
+#   api.elevenlabs.io                  Planet Express Lounge, optional premium TTS
+#   api.playhtml.fun                   the sync socket behind the arcade's shared
+#                                      play counts and star ratings (playhtml is
+#                                      BUNDLED from npm, not loaded from a CDN, so
+#                                      script-src stays 'self')
+# Pinning them means a future dependency cannot quietly add another.
+#
+# WHY THIS WIDENING IS NOT FREE, AND WHY IT IS STILL NARROW.
+# This origin holds visitor-supplied API keys in localStorage. Every host added
+# here is a host that prompt-injected model output could be talked into POSTing
+# a key to. Four were added at once for Planet Express Lounge, which quadrupled
+# that surface in a single commit. Three mitigations, all asserted by gates:
+#   1. The list is an allowlist, not a wildcard. No `https:` and no subdomain
+#      wildcards — `api.groq.com`, not `*.groq.com`.
+#   2. scripts/verify-llm-egress.mjs proves the pin BLOCKS an exfiltration fetch
+#      to an unlisted host, with a listed host as the positive control. A pin
+#      nobody proved is just a comment.
+#   3. Keys are per-visitor and per-browser. There is no shipped key to steal;
+#      the worst case is a visitor losing their own key, which is why the app
+#      says so at the point of entry rather than in a policy page.
 /*
-  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self' https://api.groq.com https://api.playhtml.fun wss://api.playhtml.fun; object-src 'none'; base-uri 'self'; form-action 'none'; frame-ancestors 'none'
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self' https://api.groq.com https://openrouter.ai https://generativelanguage.googleapis.com https://api.elevenlabs.io https://api.playhtml.fun wss://api.playhtml.fun; object-src 'none'; base-uri 'self'; form-action 'none'; frame-ancestors 'none'
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=(), interest-cohort=()

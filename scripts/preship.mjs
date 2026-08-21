@@ -139,8 +139,23 @@ const rel = (f) => path.relative(OUT, f).split(path.sep).join('/');
     if (/script-src[^;]*'unsafe-inline'/.test(csp)) F("CSP: script-src allows 'unsafe-inline'");
     if (/script-src[^;]*'unsafe-eval'/.test(csp)) F("CSP: script-src allows 'unsafe-eval'");
     const hosts = [...csp.matchAll(/https?:\/\/[^\s;]+|wss:\/\/[^\s;]+/g)].map(m => m[0]);
-    const allowed = new Set(['https://fonts.googleapis.com', 'https://fonts.gstatic.com',
-      'https://api.groq.com', 'https://api.playhtml.fun', 'wss://api.playhtml.fun']);
+    /* This allowlist is the POINT of the check: adding a host to _headers must
+     * also be an edit here, so a widening is a deliberate act with a name
+     * against it rather than something that slips through on a green run. It
+     * caught the Planet Express widening on the first attempt, which is the
+     * only reason this comment exists.
+     *
+     * Each entry names who needs it. A host with no consumer gets deleted. */
+    const allowed = new Set([
+      'https://fonts.googleapis.com',              // webfonts, all pages
+      'https://fonts.gstatic.com',                 // webfont payloads
+      'https://api.groq.com',                      // Veilfall Tier 2 + Planet Express default
+      'https://openrouter.ai',                     // Planet Express, alternate provider
+      'https://generativelanguage.googleapis.com', // Planet Express, Gemini provider
+      'https://api.elevenlabs.io',                 // Planet Express, optional premium TTS
+      'https://api.playhtml.fun',                  // arcade play counts + ratings
+      'wss://api.playhtml.fun',                    // the same, socket transport
+    ]);
     const unexpected = hosts.filter(x => !allowed.has(x));
     if (unexpected.length) F(`CSP: unexpected third-party host(s): ${unexpected.join(', ')}`);
     else OK(`CSP: strict script-src, ${hosts.length} pinned hosts, all expected`);
@@ -211,8 +226,11 @@ const rel = (f) => path.relative(OUT, f).split(path.sep).join('/');
     const llms = await readFile(path.join(OUT, 'llms.txt'), 'utf8');
     const listed = (llms.match(/^- \[/gm) || []).length;
     const inSitemap = ((await readFile(path.join(OUT, 'sitemap.xml'), 'utf8')).match(/<loc>/g) || []).length - 1;
-    if (listed !== inSitemap) F(`llms.txt lists ${listed} games but sitemap has ${inSitemap} game URLs — they must agree`);
-    else OK(`geo: llms.txt, og-card.png, sitemap and robots present; llms.txt and sitemap agree on ${listed} games`);
+    /* "entries", not "games" — the arcade ships apps too, and a message that
+     * calls both games would misreport the one number this check exists to
+     * reconcile. */
+    if (listed !== inSitemap) F(`llms.txt lists ${listed} entries but sitemap has ${inSitemap} entry URLs — they must agree`);
+    else OK(`geo: llms.txt, og-card.png, sitemap and robots present; llms.txt and sitemap agree on ${listed} entries`);
   }
 }
 
