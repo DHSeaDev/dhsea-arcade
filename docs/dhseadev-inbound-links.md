@@ -49,3 +49,41 @@ Structural facts, measured live, so the next pass does not re-derive them:
 playground) are different destinations. In the footer they sit in different
 columns — Arcade under GAMES, Play under TOOLS — so they never read as duplicates.
 No relabel was needed.
+
+---
+
+# Congruence pass — 2026-08-21 (second session)
+
+`/play/` retired, the arcade promoted, and the footer cut back.
+
+| Surface | Change | Measured |
+|---|---|---|
+| Primary Nav 60 | "Play" -> **"Arcade"** -> play.dhseadev.online | 9 items preserved |
+| footer | **GAMES + IDLE columns deleted**; "Arcade" added to SITE | 38 -> 24 anchors, 6 -> 4 columns, 0 collisions |
+| footer | "Play" link removed from TOOLS | delimiter removed with it |
+| footer context-toast MAP | `/play/` source row dropped, 2 targets repointed to the arcade | 14 -> 13 rows, valid JSON before and after |
+| home 27 | "Or the shared playground" CTA removed | 0 remaining /play/ refs |
+| `/play/` 233 | retired: notice + `location.replace` + `jetpack_seo_noindex` | 50,013 -> 984 chars |
+| projects 1084/1108/1120/1166 | "PLAY IN YOUR BROWSER" button | renders identical to sibling sc-btn |
+
+## Two judgment calls made during execution
+
+**No "All games" link was added, despite it being the agreed plan.** `/projects/`
+has **no ids at all**, so there is no `#games` anchor to point at — and the SITE
+column already contains "All Projects" pointing at `/projects/`. A second link to
+the same URL in the same footer is precisely the duplication this pass existed to
+remove. The 9 non-arcade games remain reachable through "All Projects".
+
+**`/play/` got a soft retire, not a 301.** No redirect plugin is installed and
+WP.com Atomic has no per-page redirect, so a true 301 would mean adding a plugin
+dependency for one URL. Instead: an on-brand notice, `location.replace` (no
+history entry, so the back button still works), and `jetpack_seo_noindex`. Stated
+plainly because it is weaker than a 301 for link equity.
+
+## Only 4 of 7 arcade games have project pages
+
+Lumenreel, Underglory, Veilfall and Prism Cascade do. **Emberkeep, Emberkeep
+Mountain and Bloom Rush have none** — they were never in the footer either. Not
+created here: that is three new showcase pages, a scope decision rather than a
+wiring one. They are reachable via the Arcade card on `/projects/` and the arcade
+itself.
