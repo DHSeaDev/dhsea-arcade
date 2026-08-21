@@ -1,7 +1,7 @@
 {
   "name": "dhsea-arcade",
   "version": "1.0.0",
-  "description": "DHSeaDev Arcade \u2014 seven browser games on Cloudflare Pages",
+  "description": "DHSeaDev Arcade — seven browser games on Cloudflare Pages",
   "scripts": {
     "build": "node scripts/build.mjs",
     "verify": "./scripts/verify-all.sh",
@@ -9,8 +9,12 @@
     "serve": "node -e \"import('node:http').then(async({default:h})=>{const{readFile,stat}=await import('node:fs/promises');const p=await import('node:path');const T={'.html':'text/html','.js':'text/javascript','.css':'text/css','.png':'image/png','.svg':'image/svg+xml'};h.createServer(async(q,r)=>{try{let f=p.join('dist',decodeURIComponent(q.url.split('?')[0]));if((await stat(f).catch(()=>null))?.isDirectory())f=p.join(f,'index.html');r.writeHead(200,{'Content-Type':T[p.extname(f)]||'application/octet-stream'});r.end(await readFile(f))}catch{r.writeHead(404);r.end('')}}).listen(8099,()=>console.log('http://localhost:8099'))})\""
   },
   "devDependencies": {
+    "esbuild": "^0.28.2",
     "playwright": "^1.62.1"
   },
   "private": true,
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "playhtml": "^2.13.2"
+  }
 }

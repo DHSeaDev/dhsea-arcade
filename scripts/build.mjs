@@ -148,7 +148,15 @@ async function dirSize(p) {
 
 await rm(OUT, { recursive: true, force: true });
 await mkdir(OUT, { recursive: true });
-await cp(path.join(ROOT, 'shared'), path.join(OUT, 'shared'), { recursive: true });
+/* The index template is a build input, not a runtime asset — it must not be
+ * served. Copy only what the pages actually load. */
+await cp(path.join(ROOT, 'shared'), path.join(OUT, 'shared'), {
+  recursive: true,
+  /* Build inputs, not runtime assets. playhtml-boot.js is the UNBUNDLED entry —
+   * it carries a bare `import 'playhtml'` specifier that no browser can resolve,
+   * so shipping it would put a guaranteed-broken file on the origin. */
+  filter: (src) => !src.endsWith('index.template.html') && !src.endsWith('playhtml-boot.js'),
+});
 
 const built = [];
 for (const g of GAMES) {
@@ -159,13 +167,52 @@ for (const g of GAMES) {
 // The index is generated from the same GAMES table the build uses, so a game can
 // never be shipped-but-unlisted or listed-but-unshipped.
 const indexHtml = (await readFile(path.join(ROOT, 'shared', 'index.template.html'), 'utf8'))
-  .replace('<!--CARDS-->', GAMES.map((g, i) => `      <a class="g-card" href="${built[i].url}">
+  /* The card is an <article>, NOT an <a>. The star buttons and the launch link
+   * are siblings: a button nested inside an anchor makes the parser split the
+   * card into two elements, which is a defect this project has already shipped
+   * once (the PLAYABLE chip on dhseadev.online /projects/).
+   * The can-tally / can-rate ids ARE the playhtml sync key — renaming one
+   * orphans its accumulated counts with no migration path. */
+  .replace('<!--CARDS-->', GAMES.map((g, i) => `      <article class="g-card">
         <span class="g-name">${g.name}</span>
         <span class="g-tag">${g.tagline}</span>
-        <span class="g-go">PLAY <span aria-hidden="true">&rarr;</span></span>
-      </a>`).join('\n'))
+        <div class="g-social">
+          <span class="g-plays" id="plays-${g.id}" can-tally>counting\u2026</span>
+          <div class="g-rate" id="rate-${g.id}" can-rate role="group" aria-label="Rate ${g.name}">
+${[1, 2, 3, 4, 5].map(n => `            <button class="g-star" type="button" aria-label="Rate ${n} of 5">&#9734;</button>`).join('\n')}
+            <span class="g-avg"></span>
+          </div>
+        </div>
+        <a class="g-go" href="${built[i].url}">PLAY <span aria-hidden="true">&rarr;</span></a>
+      </article>`).join('\n'))
   .replace('<!--COUNT-->', String(GAMES.length));
 await writeFile(path.join(OUT, 'index.html'), indexHtml);
+
+/* Bundle playhtml locally. Loading it from unpkg would mean allowing a
+ * third-party host in script-src — i.e. giving that host code execution on the
+ * origin where Veilfall's Groq key is stored. Bundling keeps script-src 'self'. */
+const { build: esbuild } = await import('esbuild');
+await esbuild({
+  entryPoints: [path.join(ROOT, 'shared', 'playhtml-boot.js')],
+  outfile: path.join(OUT, 'shared', 'playhtml.bundle.js'),
+  bundle: true, format: 'esm', target: 'es2020', minify: true, sourcemap: false,
+  legalComments: 'none',
+});
+/* playhtml also injects <link rel=stylesheet href="https://unpkg.com/playhtml@latest/dist/style.css">
+ * at RUNTIME — bundling the JS does not remove it. That is a hard-coded,
+ * UNPINNED CDN dependency ("@latest"), i.e. a third party that can change this
+ * page's styling at any time, and it is blocked by our CSP anyway. So the URL
+ * literal is rewritten to a self-hosted copy of the exact stylesheet shipped by
+ * the version in package-lock. Found by the CSP gate, not by reading the docs. */
+const PH_CDN = 'https://unpkg.com/playhtml@latest/dist/style.css';
+const bundlePath = path.join(OUT, 'shared', 'playhtml.bundle.js');
+let bundleSrc = await readFile(bundlePath, 'utf8');
+const hits = bundleSrc.split(PH_CDN).length - 1;
+if (hits !== 1) throw new Error(`expected exactly 1 playhtml CDN stylesheet literal, found ${hits} — playhtml changed, re-check what it loads at runtime`);
+bundleSrc = bundleSrc.replace(PH_CDN, '/shared/playhtml.css');
+await writeFile(bundlePath, bundleSrc);
+await cp(path.join(ROOT, 'node_modules', 'playhtml', 'dist', 'style.css'), path.join(OUT, 'shared', 'playhtml.css'));
+console.log('  bundled playhtml (CDN stylesheet self-hosted)');
 
 await cp(path.join(ROOT, 'public'), OUT, { recursive: true });
 
