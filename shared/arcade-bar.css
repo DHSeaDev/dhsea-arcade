@@ -26,14 +26,14 @@
   opacity:1;top:0;transition:box-shadow .18s ease,top .22s ease}
 
 /* ── auto-hide ──────────────────────────────────────────────────────────────
-   Hidden by TRANSFORM, never by opacity, display or visibility.
+   Hidden by moving it OFF-SCREEN, never by opacity, display or visibility.
    - opacity would repeat the .35 regression this file already had to undo, and
-     a faded control is worse than an absent one because it looks available.
+     a faded control is worse than an absent one because it still looks
+     available.
    - display:none / visibility:hidden would take the bar OUT OF THE TAB ORDER,
      and this is the only exit from a full-viewport canvas game.
-   translateY(-110%) parks it just past its own box-shadow so no glow survives
-   at the top edge, and pointer-events:none is what actually stops it eating a
-   click on the control it used to sit on. */
+   pointer-events:none rides along so it cannot take a click during the ~220ms
+   it is still moving, or in a browser that ignores the offset. */
 /* -200px, not -100%: percentage `top` on a fixed element resolves against the
    VIEWPORT, not the element, so a percentage here would fling it a screen-height
    away and make the transition look broken. 200px clears the bar plus its
