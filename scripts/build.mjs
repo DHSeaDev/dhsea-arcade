@@ -204,13 +204,22 @@ function injectShim(html, game, depth, url) {
   const backbar = icon + `\n<link rel="stylesheet" href="${up}shared/arcade-bar.css">\n` +
                   `<script src="${up}shared/arcade-bar.js" defer data-game-name="${game.name.replace(/"/g, '&quot;')}"></script>`;
 
+  /* An extension panel has a fixed viewport, so three of these games never
+   * needed <meta viewport> and never had one. On the web its absence means a
+   * phone lays the page out at ~980px and scales it down — the game renders
+   * legibly on a desktop and as unreadable confetti on a phone, which is the
+   * single most common way a ported page fails its largest audience.
+   * Injected only when the entry does not already declare one. */
+  const viewport = /<meta[^>]+name=["']viewport["']/i.test(html)
+    ? '' : '<meta name="viewport" content="width=device-width, initial-scale=1">\n';
+
   const headOpen = html.match(/<head[^>]*>/i);
   if (!headOpen) throw new Error(`${game.id}: no <head> in ${game.entry}`);
   const at = headOpen.index + headOpen[0].length;
   // Remove the extension's own bare <title> — two <title> elements means the
   // first wins and ours would be decoration.
   const body = html.slice(at).replace(/<title>[\s\S]*?<\/title>\s*/i, '');
-  return html.slice(0, at) + '\n' + seoHead(game, url) + '\n' + tag + '\n' + backbar + body;
+  return html.slice(0, at) + '\n' + viewport + seoHead(game, url) + '\n' + tag + '\n' + backbar + body;
 }
 
 async function copyGame(game) {

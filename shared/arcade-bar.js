@@ -126,6 +126,34 @@
     bar.addEventListener('focusin', reveal);
     bar.addEventListener('focusout', function () { collapseSoon(LINGER_MS); });
 
+    /* ── the exit of last resort ────────────────────────────────────────────
+     * Measured across all eight entries: on five of them a single Tab from a
+     * fresh load lands on this link. On Emberkeep and Emberkeep Mountain, Tab
+     * moves focus NOWHERE — body to body — even though this link is the first
+     * body child, has tabIndex 0, and focuses correctly when asked
+     * programmatically. Those pages simply have no working forward traversal,
+     * which means a keyboard visitor cannot leave the game at all.
+     *
+     * So: if a Tab arrives while NOTHING on the page holds focus, put focus on
+     * the exit. Scoped as narrowly as it can be —
+     *   - capture phase, so it runs before a game's own handler;
+     *   - ONLY when activeElement is <body>, i.e. the page has no focus to
+     *     steal. A game that focuses its canvas or a button is never touched,
+     *     and no game can lose a Tab it was actually using;
+     *   - only for plain Tab, never Shift+Tab, so backward traversal is intact;
+     *   - preventDefault only in the branch that acts.
+     * This is the one keyboard binding this file takes, and the header's
+     * "registers no keys" promise is narrowed rather than quietly broken. */
+    document.addEventListener('keydown', function (e) {
+      if (e.key !== 'Tab' || e.shiftKey || e.altKey || e.ctrlKey || e.metaKey) return;
+      if (document.activeElement && document.activeElement !== document.body) return;
+      var link = bar.querySelector('a');
+      if (!link) return;
+      e.preventDefault();
+      reveal();
+      link.focus();
+    }, true);
+
     collapseSoon(REVEAL_MS);
   }
 
