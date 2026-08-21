@@ -109,7 +109,7 @@ const ENTRIES = [
     /* Its own shim, NOT shared/chrome-shim.js. Loading both would be actively
      * harmful: the arcade shim would win the runtime.onMessage property and
      * silently kill the Dark Matter economy. */
-    shims: ['pe-web-shim.js', 'pe-web-background.js'],
+    shims: ['pe-web-shim.js', 'pe-web-background.js', 'pel-web-enhance.js'],
     drop: ['popup.html', 'popup.js', 'background.js', 'manifest.json', 'README.md', 'store_listing_description.txt'],
   },
 ];

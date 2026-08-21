@@ -24,6 +24,13 @@
 (function () {
   "use strict";
 
+  /* Idempotency guard. A second execution of this file — a duplicated script
+   * tag, a hand-written copy beside a build-injected one — would seat a second
+   * engine: two message listeners double-charging every spend, two tickers, two
+   * boot settles. It happened once, from exactly that cause. Running twice must
+   * be a no-op, not a doubling. */
+  if (globalThis.__PE_SHIM__) return;
+
   /* Key namespace. Taken from the script tag's data-ns, set by the build to the
    * entry id — the same convention shared/chrome-shim.js uses via data-game-id,
    * and the same one verify.mjs asserts against (`localStorage` must hold a key

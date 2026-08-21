@@ -138,6 +138,25 @@ const rel = (f) => path.relative(OUT, f).split(path.sep).join('/');
   else {
     if (/script-src[^;]*'unsafe-inline'/.test(csp)) F("CSP: script-src allows 'unsafe-inline'");
     if (/script-src[^;]*'unsafe-eval'/.test(csp)) F("CSP: script-src allows 'unsafe-eval'");
+    /* The host regex requires `//`, so it is BLIND to the widest sources there
+     * are: a bare scheme (`https:`), a wildcard (`*`), and `data:`/`blob:` in a
+     * script context. Verified: run against
+     *   connect-src 'self' https: * data: https://api.groq.com
+     * it captured only api.groq.com, `unexpected` came back empty, and the check
+     * printed "1 pinned hosts, all expected". The gate whose job is to make a
+     * widening deliberate did not fire on a total widening. Found by review.
+     * Scanned before the host list so the loudest failure reports first. */
+    const WIDE = /(^|[\s;])(\*|https?:(?!\/\/)|data:|blob:|filesystem:)(?=[\s;]|$)/g;
+    for (const d of csp.split(';')) {
+      const name = d.trim().split(/\s+/)[0];
+      if (!name) continue;
+      const wide = [...d.matchAll(WIDE)].map(m => m[2]);
+      // data:/blob: are legitimate for img-src and media-src on this site and are
+      // not an egress channel for a secret; everywhere else they are a widening.
+      const ok_here = (src) => (src === 'data:' || src === 'blob:') && /^(img|media|font)-src$/.test(name);
+      const bad = wide.filter(x => !ok_here(x));
+      if (bad.length) F(`CSP: ${name} contains wildcard/scheme-wide source(s): ${[...new Set(bad)].join(' ')}`);
+    }
     const hosts = [...csp.matchAll(/https?:\/\/[^\s;]+|wss:\/\/[^\s;]+/g)].map(m => m[0]);
     /* This allowlist is the POINT of the check: adding a host to _headers must
      * also be an edit here, so a widening is a deliberate act with a name

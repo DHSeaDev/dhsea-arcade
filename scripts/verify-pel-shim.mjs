@@ -222,6 +222,58 @@ await page.addScriptTag({ content: SHIM });
   await p3.close();
 }
 
+// ── 6. Regressions found by adversarial review, not by a gate ────────────────
+// Each of these shipped once. A defect a review catches and no gate covers means
+// the gate set was incomplete, so each finding becomes an assertion here.
+{
+  const p4 = await newPage();
+  await p4.evaluate(() => localStorage.clear());
+
+  // 6a. DOUBLE EXECUTION. Both shim files were injected by the build AND
+  // hand-written into the entry document, so each ran twice: two DM engines
+  // double-charging every spend, two tickers, and __PE_SHIM__ rebound to a
+  // dispatcher with an empty listener set — so every broadcast reached nobody.
+  // The tags are gone, and both files now no-op on a second run. Assert the
+  // GUARD, because the tags can come back.
+  await p4.addScriptTag({ content: SHIM });
+  await p4.addScriptTag({ content: BG });
+  await p4.waitForFunction(() => !!globalThis.__PE_DM__);
+  const firstDispatch = await p4.evaluate(() => {
+    globalThis.__probe = 0;
+    chrome.runtime.onMessage.addListener((m) => { if (m.type === "probe") globalThis.__probe++; return false; });
+    return true;
+  });
+  await p4.addScriptTag({ content: SHIM });     // run both a second time
+  await p4.addScriptTag({ content: BG });
+  const dbl = await p4.evaluate(async () => {
+    const before = (await chrome.runtime.sendMessage({ type: "dm_get" })).darkMatter;
+    await chrome.runtime.sendMessage({ type: "dm_earn", amount: 100, label: "t" });
+    const after = (await chrome.runtime.sendMessage({ type: "dm_get" })).darkMatter;
+    globalThis.__PE_SHIM__.dispatch({ type: "probe" });
+    return { delta: after - before, probeSeen: globalThis.__probe };
+  });
+  ok("double-run does not double-credit", firstDispatch && dbl.delta === 100, `+100 earned, balance moved ${dbl.delta}`);
+  ok("double-run does not orphan the broadcast bus", dbl.probeSeen === 1,
+     `__PE_SHIM__.dispatch reached ${dbl.probeSeen} listener(s) — 0 means lab.js never sees dm_update`);
+
+  // 6b. THE CAP MUST ACTUALLY CAP. The first version advanced the clock only by
+  // the ticks it PAID, keeping the remainder — which made the cap a per-settle
+  // rate limit. settleOfflineAccrual re-runs on every visibilitychange, so a
+  // long absence could be drained by alt-tabbing. Settle repeatedly and assert
+  // the total stays inside ONE capped payout.
+  const farm = await p4.evaluate(async () => {
+    localStorage.setItem("pel:darkMatter", "0");
+    localStorage.setItem("pel:dmLastTick", JSON.stringify(Date.now() - 30 * 24 * 60 * 60_000));
+    for (let i = 0; i < 25; i++) await globalThis.__PE_DM__.settleOfflineAccrual();
+    return globalThis.__PE_DM__.getDarkMatter();
+  });
+  // One capped payout ceilings at 480 ticks x 7 = 3360. Twenty-five settles of a
+  // 30-day gap would reach ~84,000 if the remainder carried forward.
+  ok("CONTROL repeated settles cannot farm a long absence", farm <= 3360,
+     `30 days away, settled 25x => ${farm} DM (single-payout ceiling 3360)`);
+  await p4.close();
+}
+
 await browser.close();
 server.close();
 

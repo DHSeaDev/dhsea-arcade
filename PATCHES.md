@@ -67,10 +67,21 @@ survive:
 - **`chrome.alarms` → timestamp-delta accrual.** The 60s focus tick fired while
   the user browsed. A page stops existing when its tab closes, so a live
   `setInterval` alone would mean a closed tab accrues nothing. Time away now
-  accrues, **capped at 8 hours** (`OFFLINE_CAP_MIN = 480`). This is a real change
-  to the economy's shape and it wants `/idle-economy-balance` before anyone
-  treats the curve as tuned. The clock advances by ticks PAID, not to `now`, so a
-  capped absence does not silently burn the remainder.
+  accrues, **capped at 8 hours** (`OFFLINE_CAP_MIN = 480`); beyond the cap the
+  remainder is **forfeited** and the clock jumps to now. This is a real change to
+  the economy's shape and it wants `/idle-economy-balance` before anyone treats
+  the curve as tuned.
+
+  **Correction, same day.** The first version advanced the clock only by the
+  ticks it PAID, on the reasoning that carrying the remainder forward was more
+  honest than burning it — and this file said so. That made the cap a
+  per-settlement RATE LIMIT rather than a cap: `settleOfflineAccrual` re-runs on
+  every `visibilitychange`, so a 30-day absence could be drained by alt-tabbing
+  ~90 times — thousands of DM in a minute, trivially clearing the 150 DM
+  Mega-Invention. Found by adversarial review, which also flagged that the
+  declaration above was inaccurate about what the code did. Both are fixed;
+  `verify-pel-shim.mjs` now settles a 30-day gap 25 times and asserts the total
+  stays inside a single capped payout.
 - **`chrome.action` badge → `document.title`.** There is no toolbar. Autopilot
   state and the DM total appear in the tab title instead.
 
@@ -109,3 +120,68 @@ ONLY — asserting `VideoGame` on a chat client is a false claim to a search
 engine, the same class as the invented `aggregateRating` this project has always
 refused to emit. `browserRequirements` differs too: an app with no canvas does
 not claim to need one.
+
+
+### 6. Review findings, and the gates that now cover them
+An adversarial review panel (three independent reviewers — correctness, security,
+first-run/a11y — each given the contract without the author's reasoning) ran after
+all four suites were green. It found defects every one of those suites passed.
+Each fix below is paired with the gate that would now catch it, because a defect
+a review finds and no gate covers means the gate set was incomplete.
+
+- **Both shim files were injected TWICE** — written by hand into `app.html` AND
+  injected by `build.mjs`, which inserts after `<head>` without checking for an
+  existing tag. Two DM engines double-charged every spend, two tickers ran, and
+  `__PE_SHIM__` was rebound to a dispatcher with an empty listener set, so every
+  `dm_update` broadcast reached nobody. That is precisely the silent-economy
+  failure `pe-web-shim.js`'s own header claims to defend against, arriving by a
+  route the header did not consider. Tags removed; both files now carry an
+  idempotency guard. → `verify-pel-shim.mjs` §6a.
+- **The cap did not cap.** See §2 above. → `verify-pel-shim.mjs` §6b.
+- **`settleOfflineAccrual` had no re-entrancy guard** — boot racing a
+  `visibilitychange` paid the same gap twice. Busy flag set before the first
+  await, cleared in `finally`.
+- **The tab strip was not keyboard-operable at all.** Five `<div class="tab">`
+  with `tabIndex -1`, no role. On the web that is a dead end rather than an
+  annoyance: SETTINGS is the only place to enter an API key, so a keyboard-only
+  visitor could never make the app work. Now a roving-tabindex tablist with
+  arrows, Home/End and Enter/Space, in `pel-web-enhance.js` — activation
+  delegated to `.click()` so `sidepanel.js` stays the single source of truth.
+  → NEW gate `verify-pel-a11y.mjs`.
+- **Form controls had no accessible name.** Every `.field` carries a bare
+  `<label>` with no `for`; the caption was always there and simply never
+  associated. Wired with `for`/`id` rather than copied into an `aria-label`.
+  → `verify-pel-a11y.mjs`.
+- **Connecting a key dropped the visitor into an empty black panel.** The demo
+  transcript is cleared and nothing replaced it. Now an empty state — a class
+  from `pel-web-enhance.js`, copy in CSS, so nothing is ever inserted into
+  `#chatlog`, whose children `sidepanel.js` owns.
+- **The chip overlapped the header between 40rem and 52rem.** The indent
+  breakpoint had been set narrower than the chip itself. Only the MIDDLE of the
+  three tested widths was broken — 1600 had room, 390 pushed the app down, 820
+  did neither.
+- **The composer floated at ~220px in a 1345px panel** — the 74ch measure was
+  capping the row without letting the field fill it.
+- **`document.title` clobbered the build's SEO title** with a hardcoded string.
+  Now read from the document.
+- **`preship.mjs` check 6 was blind to the widest widenings.** Its host regex
+  requires `//`, so `https:`, `*` and `data:` were invisible — `connect-src 'self'
+  https: * https://api.groq.com` printed "1 pinned hosts, all expected". A
+  wildcard/scheme scan now runs first, and was proved to FAIL on that exact
+  string before being trusted.
+- **`verify-llm-egress.mjs` claimed more than it can prove.** It sets the CSP
+  header on its own server, so it cannot see a delivery-layer failure — the very
+  case its docblock cited. The limits are now written into the file, along with
+  the two residual channels connect-src does not close (laundering through a
+  listed host; top-level navigation).
+
+Not fixed, recorded as accepted: the Gemini key travels in a URL query string
+(pre-existing, `llm.js`); `escHtml` does not escape quotes (no attribute-context
+use today); five BYOK keys share one origin's `localStorage` with seven games,
+which is the shape of a static multi-app origin and not something a shim can fix.
+
+**Three of the review's own findings turned out to be defects in its probes, not
+in the app** — an "unfocusable API key field" was the probe grabbing a collapsed
+spoiler's input three different ways (`offsetParent`, then `getBoundingClientRect`,
+then finally `checkVisibility()`). `#groqKey` was correct throughout. The
+registry's harness-bug-reads-as-app-bug class, live again.

@@ -41,11 +41,17 @@ html, body { height: 100%; overflow: hidden; }
  * and the product name is unreadable on every phone — which is what the first
  * phone screenshot showed while the desktop one looked finished. The two
  * widths are separate designs and each one has to be looked at. */
-@media (max-width: 39.99rem) {
+/* The arcade chip is ~15rem wide with the app's name in it. The first cut moved
+ * the header indent in at 40rem, which is NARROWER than the chip — so between
+ * 40rem and about 52rem the chip sat on top of the header and the title rendered
+ * as "NET EXPRESS" with "PLA" hidden underneath. Three widths were checked and
+ * only the middle one was broken: 1600 had room, 390 pushed the app down, 820
+ * did neither. A breakpoint that is not tested at its own boundary is a guess. */
+@media (max-width: 51.99rem) {
   .app { padding-top: 2.1rem; }
 }
 
-@media (min-width: 40rem) {
+@media (min-width: 52rem) {
   /* The chip is fixed-position and ~11rem wide, so the header is INDENTED past
    * it rather than sliding under it. `min-width: 0` on the logo is the other
    * half: .header is a flex row, and a flex item's default `min-width: auto`
@@ -127,6 +133,28 @@ html, body { height: 100%; overflow: hidden; }
 .demo-chatlog > * {
   max-width: 74ch;
   margin-inline: auto;
+}
+/* The composer row is a flex line whose textarea does not grow, so centring it
+ * inside a 74ch box left a ~220px input floating in the middle of a 1345px
+ * panel with its placeholder wrapping onto two lines. Capping the ROW is right;
+ * the field inside it still has to fill the row. */
+.chat-footer .input-row { width: 100%; }
+.chat-footer .chat-input { flex: 1 1 auto; min-width: 0; }
+
+/* Connecting an API key clears the demo transcript and puts nothing in its
+ * place. pel-web-enhance.js marks the empty container; the copy lives here so
+ * nothing is ever inserted into #chatlog, whose children sidepanel.js owns. */
+#chatlog.pel-empty::after {
+  content: "Good news — you're connected. Ask the crew anything to start.";
+  display: block;
+  margin: auto;
+  padding: 1.5rem;
+  max-width: 34ch;
+  text-align: center;
+  color: var(--fg2);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.8125rem;
+  line-height: 1.7;
 }
 
 /* ── LAB / SAVED / SETTINGS: lists become grids ──────────────────────────────

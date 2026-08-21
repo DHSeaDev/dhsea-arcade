@@ -32,6 +32,13 @@
 (function () {
   "use strict";
 
+  /* Idempotency guard. A second execution of this file — a duplicated script
+   * tag, a hand-written copy beside a build-injected one — would seat a second
+   * engine: two message listeners double-charging every spend, two tickers, two
+   * boot settles. It happened once, from exactly that cause. Running twice must
+   * be a no-op, not a doubling. */
+  if (globalThis.__PE_DM__) return;
+
   const chrome = globalThis.chrome;
 
   // ── Constants (lifted from background.js) ───────────────────────────────────
@@ -82,7 +89,12 @@
   }
 
   // ── Badge → document title ──────────────────────────────────────────────────
-  const BASE_TITLE = "Planet Express Lounge";
+  /* Read from the document rather than hardcoded. scripts/build.mjs injects an
+   * SEO <title> ("Planet Express Lounge — an AI sitcom engine in your browser")
+   * and a hardcoded constant here silently replaced it before first paint,
+   * losing it for the tab label, bookmarks and anything reading the live DOM.
+   * A second copy of ENTRIES[].name is also free to drift from the table. */
+  const BASE_TITLE = (document.title || "Planet Express Lounge").trim();
   let _stateTag = "";
 
   function compact(value) {
@@ -104,7 +116,25 @@
   }
 
   // ── Focus tick: timestamp-delta + live interval ─────────────────────────────
+  /* Busy flag set BEFORE the first await and cleared in `finally`. There are
+   * three await points between reading dmLastTick and writing it, so two
+   * overlapping calls — boot racing a visibilitychange, which is the ordinary
+   * case for a tab opened in the background — both read the same `last`, both
+   * roll rewards, and the gap is paid twice. The second call is redundant
+   * rather than carrying unique data, so a flag is correct here and a queue
+   * would be overkill. */
+  let _settling = false;
   async function settleOfflineAccrual() {
+    if (_settling) return 0;
+    _settling = true;
+    try {
+      return await _settle();
+    } finally {
+      _settling = false;
+    }
+  }
+
+  async function _settle() {
     const s    = await chrome.storage.local.get([LAST_TICK_KEY]);
     const now  = Date.now();
     const last = parseInt(s[LAST_TICK_KEY]) || 0;
@@ -124,10 +154,20 @@
     // and collapsing it to a mean removes the property the design is built on.
     for (let i = 0; i < ticks; i++) total += randInt(DM_FOCUS_MIN, DM_FOCUS_MAX);
 
-    // Advance the clock by the ticks actually PAID, not to `now`. Paying to
-    // `now` after a cap silently burns the remainder; advancing by what was
-    // paid keeps the ledger honest across a long absence.
-    await chrome.storage.local.set({ [LAST_TICK_KEY]: last + ticks * TICK_MS });
+    /* When the absence EXCEEDS the cap, the remainder is forfeited and the
+     * clock jumps to now.
+     *
+     * An earlier version advanced only by the ticks paid, on the reasoning that
+     * carrying the remainder forward was more honest than burning it. That made
+     * the "cap" a per-settlement rate limit rather than a cap, and this function
+     * re-runs on every visibilitychange — so a 30-day absence could be drained
+     * by alt-tabbing ~90 times, thousands of DM in under a minute, trivially
+     * clearing the 150 DM Mega-Invention. Found by review, not by a gate.
+     *
+     * Under the cap the exact arithmetic is kept, so a normal session never
+     * loses the sub-minute remainder. */
+    const capped = elapsedMin > OFFLINE_CAP_MIN;
+    await chrome.storage.local.set({ [LAST_TICK_KEY]: capped ? now : last + ticks * TICK_MS });
     if (total > 0) await addDarkMatter(total, ticks === 1 ? "focus-tick" : "Offline focus");
     return total;
   }
