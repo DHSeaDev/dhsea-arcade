@@ -11,8 +11,41 @@
      invisible, and put small text far under the contrast floor. Full opacity is
      the accessible default; the bar earns its unobtrusiveness from being small
      and tucked into the corner, not from being faint. */
-  opacity:1;transition:box-shadow .18s ease,transform .18s ease;transform:translateY(0)}
+  opacity:1;transition:box-shadow .18s ease,transform .22s ease;transform:translateY(0);
+  will-change:transform}
+
+/* ── auto-hide ──────────────────────────────────────────────────────────────
+   Hidden by TRANSFORM, never by opacity, display or visibility.
+   - opacity would repeat the .35 regression this file already had to undo, and
+     a faded control is worse than an absent one because it looks available.
+   - display:none / visibility:hidden would take the bar OUT OF THE TAB ORDER,
+     and this is the only exit from a full-viewport canvas game.
+   translateY(-110%) parks it just past its own box-shadow so no glow survives
+   at the top edge, and pointer-events:none is what actually stops it eating a
+   click on the control it used to sit on. */
+#arcade-bar[data-state="collapsed"]{transform:translateY(-110%);pointer-events:none}
+
+/* Focus ALWAYS wins, and it is a plain CSS rule on purpose: if arcade-bar.js
+   throws or is blocked, a keyboard user must still be able to Tab to the exit
+   and see where the focus went. The exit does not depend on script. */
+#arcade-bar:focus-within{transform:translateY(0) !important;pointer-events:auto !important}
 #arcade-bar:hover,#arcade-bar:focus-within{box-shadow:0 1px 0 rgba(196,181,253,.45),0 8px 26px rgba(0,0,0,.45)}
+
+/* The reveal target for touch. Inert wherever a pointer can hover — there the
+   mousemove handler reveals the bar and this strip must not take clicks. Only
+   on a hover-less device does it become tappable, because a touch user has no
+   other way to ask for the bar back. 10px in the extreme corner. */
+#arcade-bar-zone{position:fixed;top:0;left:0;width:150px;height:10px;
+  z-index:2147482999;pointer-events:none;background:transparent}
+@media (hover:none){
+  #arcade-bar-zone{pointer-events:auto}
+  /* A hover-less device gets a visible sliver, otherwise the target is a
+     secret. Faint on purpose: this is an affordance, not a control — the
+     control it reveals is the one held to the contrast floor. */
+  #arcade-bar[data-state="collapsed"] + #arcade-bar-zone{
+    background:linear-gradient(90deg,rgba(196,181,253,.55),rgba(196,181,253,0));
+    border-bottom-right-radius:6px}
+}
 #arcade-bar a{color:#DDD6FE;text-decoration:none;display:inline-flex;align-items:center;gap:.3rem;
   padding:.2rem .1rem;border-radius:5px}
 #arcade-bar a:hover{color:#EDE9FE;text-decoration:underline}
@@ -22,4 +55,7 @@
 /* A game that hides the cursor or goes fullscreen should not be fighting a bar. */
 :fullscreen #arcade-bar{display:none}
 @media print{#arcade-bar{display:none}}
+/* Reduced motion: still hides, just without the slide. Suppressing the motion
+   is the request; suppressing the behaviour would leave those users with the
+   overlay-on-the-control bug everyone else just had fixed. */
 @media (prefers-reduced-motion:reduce){#arcade-bar{transition:none}}

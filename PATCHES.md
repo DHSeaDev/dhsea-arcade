@@ -207,3 +207,47 @@ in the app** — an "unfocusable API key field" was the probe grabbing a collaps
 spoiler's input three different ways (`offsetParent`, then `getBoundingClientRect`,
 then finally `checkVisibility()`). `#groqKey` was correct throughout. The
 registry's harness-bug-reads-as-app-bug class, live again.
+
+---
+
+## The arcade back control now auto-hides — all 8 pages, 2026-08-21
+
+Reported against Veilfall: the bar sat on top of a real control in the top-left
+corner, so that control could not be clicked at all. A fixed overlay that never
+moves is a hitbox over someone else's UI, and it was on every page.
+
+It now reveals for 3.5s on arrival — so the way out stays discoverable — then
+slides away. Coming back: pointer within 240x72px of the corner (passive
+`mousemove`), keyboard focus, or a tap on a 150x10px strip on touch devices,
+which have no hover and would otherwise have no way to ask for it.
+
+**Hidden by TRANSFORM, and the alternatives were rejected for specific reasons:**
+- `opacity` would repeat the regression this bar already had to undo once — it
+  shipped at `opacity: .35`, which made the only exit effectively invisible and
+  put its text under the contrast floor. A faded control is worse than an absent
+  one because it still looks available.
+- `display:none` / `visibility:hidden` remove it from the TAB ORDER, and this is
+  the only exit from a full-viewport canvas game. **The gate catches this** —
+  verified by shipping it deliberately: "focus does NOT bring the arcade bar back
+  on screen — keyboard users lose the only exit."
+
+The reveal-on-focus rule is plain CSS (`:focus-within`), not JavaScript, so the
+exit survives `arcade-bar.js` failing or being blocked entirely.
+
+`verify.mjs` gains an `autohide` check on all 8 pages: it collapses unprompted,
+the corner belongs to the page again, and focus brings it back on screen at full
+opacity. State is read from `data-state`, not timed, so the gate cannot go flaky
+on an animation.
+
+**One honest correction.** The first sabotage run removed `pointer-events:none`
+and the gate stayed GREEN — and that was correct, not a hole: once the transform
+lands the bar is not under the cursor at all, so an offscreen element intercepts
+nothing and the sabotage was never a regression. Removing the TRANSFORM is the
+real regression, and that does turn the row red (verified). `pointer-events:none`
+stays for the ~220ms slide and for a browser that ignores the transform — belt
+and braces, and the gate's comment now says so instead of taking credit for work
+it does not do.
+
+Planet Express reclaims its header gutter the same way: the 12rem indent is now
+`#arcade-bar[data-state="revealed"] ~ .app .header`, a general-sibling selector
+reading the bar's own state, so there is no second timer to drift out of sync.

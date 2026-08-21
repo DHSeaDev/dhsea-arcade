@@ -30,7 +30,11 @@ html {
  * so the app box becomes the dynamic viewport — dvh, not vh, so a mobile URL
  * bar collapsing does not leave a dead strip under the composer. */
 html, body { height: 100%; overflow: hidden; }
-.app { height: 100dvh; }
+.app { height: 100dvh; transition: padding-left .22s ease, padding-top .22s ease; }
+.app .header { transition: padding-left .22s ease; }
+@media (prefers-reduced-motion: reduce) {
+  .app, .app .header { transition: none; }
+}
 
 /* The arcade back control is `position: fixed` at top-left with a very high
  * z-index, and verify.mjs asserts it is the first body child at full opacity —
@@ -47,8 +51,13 @@ html, body { height: 100%; overflow: hidden; }
  * as "NET EXPRESS" with "PLA" hidden underneath. Three widths were checked and
  * only the middle one was broken: 1600 had room, 390 pushed the app down, 820
  * did neither. A breakpoint that is not tested at its own boundary is a guess. */
+/* The indent now FOLLOWS THE BAR rather than being reserved permanently. The bar
+ * auto-hides, so a fixed 12rem gutter would be dead space almost all the time —
+ * and `#arcade-bar` is the first body child with `.app` a later sibling, so a
+ * general-sibling selector reads its state directly. No JS, no duplicated
+ * timer, and nothing to drift out of sync with the bar's own behaviour. */
 @media (max-width: 51.99rem) {
-  .app { padding-top: 2.1rem; }
+  #arcade-bar[data-state="revealed"] ~ .app { padding-top: 2.1rem; }
 }
 
 @media (min-width: 52rem) {
@@ -58,7 +67,7 @@ html, body { height: 100%; overflow: hidden; }
    * refuses to shrink below its content, so the indent pushed the title out of
    * the header's overflow instead of reflowing it — which is why the first
    * screenshot read ".ANET EXPRESS". */
-  .header { padding-left: 12rem; }
+  #arcade-bar[data-state="revealed"] ~ .app .header { padding-left: 12rem; }
   .header .logo { min-width: 0; }
   .header .logo-title, .header .logo-sub { white-space: nowrap; }
 }

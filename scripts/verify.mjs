@@ -125,6 +125,63 @@ for (const [id, url] of [['ARCADE INDEX', ''], ...GAMES]) {
       if (bar && bar.opacity < 0.9) row.errors.push(`arcade bar opacity ${bar.opacity} — the way back is barely visible`);
       if (bar && !bar.firstChild) row.errors.push('arcade bar is not the first body child — it is the LAST tab stop');
 
+      /* ── auto-hide contract ──────────────────────────────────────────────
+       * The bar sat permanently over the top-left corner, and on Veilfall that
+       * corner holds a real control the bar made unclickable. It now hides
+       * itself. Hiding introduces three new ways to be wrong, so all three are
+       * asserted rather than assumed:
+       *
+       *   a) it must actually collapse, unprompted;
+       *   b) collapsed, the corner must belong to the page again. NOTE what this
+       *      does and does not prove: once the transform lands, the bar is not
+       *      at (60,30) at all, so elementFromPoint passes whether or not
+       *      pointer-events:none is set. Sabotaging pointer-events alone was
+       *      tried and this gate stayed green — correctly, because an offscreen
+       *      element intercepts nothing; the sabotage was not a regression.
+       *      `off` below is the check with teeth: dropping the TRANSFORM does
+       *      reproduce the original bug and does turn this row red (verified).
+       *      pointer-events:none remains in the CSS for the ~220ms the bar is
+       *      still sliding, and for a browser that ignores the transform —
+       *      belt-and-braces, not the primary fix, and labelled as such rather
+       *      than credited with work it does not do;
+       *   c) focus must bring it back ON SCREEN, because this is the only exit
+       *      from a full-viewport canvas game and hiding it must never cost a
+       *      keyboard user the way out.
+       *
+       * State is read from data-state, not from a stopwatch — timing the
+       * animation would make this gate flaky for a reason unrelated to the app. */
+      const auto = await page.evaluate(async () => {
+        const b = document.getElementById('arcade-bar');
+        if (!b) return null;
+        const wait = (ms) => new Promise(r => setTimeout(r, ms));
+        for (let i = 0; i < 60 && b.dataset.state !== 'collapsed'; i++) await wait(100);
+        const collapsed = b.dataset.state === 'collapsed';
+        await wait(320);                       // let the transform settle
+
+        // (b) does the corner belong to the page again?
+        const hit = document.elementFromPoint(60, 30);
+        const intercepts = !!(hit && (hit === b || b.contains(hit)));
+        const off = b.getBoundingClientRect().bottom <= 1;
+
+        // (c) keyboard brings it back, fully on screen
+        const link = b.querySelector('a');
+        link.focus();
+        await wait(320);
+        const r = link.getBoundingClientRect();
+        const restored = document.activeElement === link && r.top >= 0 && r.bottom > 0;
+        const opacityWhenShown = Number(getComputedStyle(b).opacity);
+        link.blur();
+        return { collapsed, intercepts, off, restored, opacityWhenShown };
+      });
+      if (auto) {
+        if (!auto.collapsed)  row.errors.push('arcade bar never auto-collapsed — it stays parked over the game');
+        if (auto.intercepts)  row.errors.push('arcade bar still intercepts clicks at (60,30) while collapsed — the overlay bug is not fixed');
+        if (!auto.off)        row.errors.push('arcade bar is marked collapsed but still occupies the corner');
+        if (!auto.restored)   row.errors.push('focus does NOT bring the arcade bar back on screen — keyboard users lose the only exit');
+        if (auto.opacityWhenShown < 0.9) row.errors.push(`arcade bar revealed at opacity ${auto.opacityWhenShown} — it must hide by transform, never by fading`);
+        row.autohide = auto.collapsed && !auto.intercepts && auto.off && auto.restored && auto.opacityWhenShown >= 0.9;
+      }
+
       const token = 'verify-' + id + '-' + url.length;
       await page.evaluate(t => chrome.storage.local.set({ __verify__: t }), token);
       await page.reload({ waitUntil: 'load' });
@@ -149,9 +206,9 @@ let fail = 0;
 console.log('\n' + '─'.repeat(78));
 for (const r of results) {
   const checks = [r.boot && 'boot', r.painted && 'painted', r.shim && 'shim',
-    r.bar && 'bar', r.persisted && 'saves', r.namespaced && 'ns'].filter(Boolean);
+    r.bar && 'bar', r.autohide && 'autohide', r.persisted && 'saves', r.namespaced && 'ns'].filter(Boolean);
   const bad = !r.boot || !r.painted || r.errors.length ||
-              (r.id !== 'ARCADE INDEX' && (!r.shim || !r.persisted || !r.namespaced || !r.bar));
+              (r.id !== 'ARCADE INDEX' && (!r.shim || !r.persisted || !r.namespaced || !r.bar || !r.autohide));
   if (bad) fail++;
   console.log(`${bad ? 'FAIL' : 'PASS'}  ${r.id.padEnd(20)} ${checks.join(' ')}`);
   for (const e of r.errors.slice(0, 6)) console.log(`        ${e.slice(0, 150)}`);
