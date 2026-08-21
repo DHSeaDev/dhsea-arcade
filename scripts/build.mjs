@@ -213,13 +213,65 @@ function injectShim(html, game, depth, url) {
   const viewport = /<meta[^>]+name=["']viewport["']/i.test(html)
     ? '' : '<meta name="viewport" content="width=device-width, initial-scale=1">\n';
 
+  /* A VISUALLY-HIDDEN <h1>, injected only when the entry has none of its own.
+   *
+   * Four entries ship no h1: two are pure canvas with no headings at all, and
+   * Underglory has five <h2> under no <h1>, which is a broken outline rather
+   * than a missing nicety. A canvas game's title is PAINTED, so it does not
+   * exist to a crawler or a screen reader — the page announces itself as
+   * nothing. This is the same class as the SEO gap that put seven bare pages in
+   * the sitemap: the machine-readable layer was simply absent.
+   *
+   * Injected at BUILD time, into the served bytes, not by script — an answer
+   * engine that does not execute JavaScript is exactly the visitor this is for.
+   * The text is the entry's own `name`, so the hidden heading says what the page
+   * genuinely is; it is not keyword stuffing and it is not cloaking. Anything
+   * other than the real name here would be.
+   *
+   * Placed as the first body child in source. arcade-bar.js later inserts the
+   * bar BEFORE this at runtime, so the bar keeps the first-child position
+   * verify.mjs asserts. */
+  const escH = (x) => x.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+  /* "Has an h1" is not the same as "has a page heading", and two entries prove
+   * it: Emberkeep's h1 is the live room label and ships as `1.`, Mountain's is
+   * the chapter numeral `I.`. Those are HUD readouts that happen to be marked up
+   * as headings — a crawler or screen reader is told this page is called "1.".
+   * A presence check would score both as fine.
+   *
+   * So the test is whether the SERVED bytes carry a heading with real words:
+   * strip everything that is not a letter and require three. `1.` -> "" and
+   * `I.` -> "I" both fail; `Veilfall` and `Bloom Rush — Propagation Station`
+   * both pass. Deliberately looks at the static markup, because JS filling that
+   * element in later is invisible to the visitor this is for.
+   *
+   * Where a non-descriptive h1 already exists the injected one is placed FIRST
+   * in the body, so the page's real name leads. That does leave two h1s on those
+   * two pages — legal in HTML5, and strictly better than a page whose only
+   * heading is a numeral. The proper fix belongs in those games: a HUD readout
+   * should be a <div>, not an <h1>. Recorded rather than silently patched, since
+   * this port does not edit game source. */
+  const existingH1 = html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i);
+  const h1Words = existingH1
+    ? existingH1[1].replace(/<[^>]*>/g, '').replace(/[^A-Za-z]/g, '')
+    : '';
+  const srH1 = h1Words.length >= 3
+    ? ''
+    : `<h1 class="arcade-sr-only">${escH(game.name)}</h1>\n`;
+
   const headOpen = html.match(/<head[^>]*>/i);
   if (!headOpen) throw new Error(`${game.id}: no <head> in ${game.entry}`);
   const at = headOpen.index + headOpen[0].length;
   // Remove the extension's own bare <title> — two <title> elements means the
   // first wins and ours would be decoration.
   const body = html.slice(at).replace(/<title>[\s\S]*?<\/title>\s*/i, '');
-  return html.slice(0, at) + '\n' + viewport + seoHead(game, url) + '\n' + tag + '\n' + backbar + body;
+  const withHead = html.slice(0, at) + '\n' + viewport + seoHead(game, url) + '\n' + tag + '\n' + backbar + body;
+  if (!srH1) return withHead;
+  /* Insert immediately after <body ...>, preserving any attributes on the tag. */
+  const bodyOpen = withHead.match(/<body[^>]*>/i);
+  if (!bodyOpen) throw new Error(`${game.id}: no <body> — cannot place the page heading`);
+  const bAt = bodyOpen.index + bodyOpen[0].length;
+  return withHead.slice(0, bAt) + '\n' + srH1 + withHead.slice(bAt);
 }
 
 async function copyGame(game) {

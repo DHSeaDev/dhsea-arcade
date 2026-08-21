@@ -10,6 +10,7 @@ echo; echo "▸ veilfall llm-security";   node scripts/verify-veilfall-security.
 echo; echo "▸ planet-express shim layer"; node scripts/verify-pel-shim.mjs
 echo; echo "▸ connect-src egress pin";    node scripts/verify-llm-egress.mjs
 echo; echo "▸ planet-express keyboard a11y"; node scripts/verify-pel-a11y.mjs
+echo; echo "▸ seo headings (h1 per entry)"; node scripts/verify-seo-headings.mjs
 echo; echo "▸ stress battery (9 shards, concurrency 3)"; node scripts/stress.mjs
 echo; echo "â¸ preship-ritual [Web/Frontend]"; node scripts/preship.mjs
 echo; echo "ALL GATES PASS"

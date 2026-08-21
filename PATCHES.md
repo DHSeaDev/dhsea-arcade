@@ -299,3 +299,47 @@ background tab says nothing about a transition.** Check `document.visibilityStat
 before trusting one, exactly as a benchmark is validated before its numbers are.
 This is the harness-bug-reads-as-app-bug class again, and this time it survived
 two rounds of diagnosis before being caught.
+
+---
+
+## Every entry now announces its own name — 2026-08-21
+
+Four entries shipped **no `<h1>` at all**. Two of those are pure canvas, where the
+title is *painted* — so it does not exist to a crawler or a screen reader, and
+the page announced itself as nothing. Underglory had five `<h2>` under no `<h1>`,
+which is a broken outline rather than a missing nicety.
+
+`scripts/build.mjs` now injects a visually-hidden `<h1>` carrying the entry's own
+`name` from the ENTRIES table. **At build time, into the served bytes** — an
+answer engine that does not run JavaScript is exactly the visitor this is for.
+The text is the real name, so this is a machine-readable label for a page that
+already is what it says; anything else there would be cloaking.
+
+**"Has an `<h1>`" is not "has a page heading", and two entries proved it.**
+Emberkeep's `<h1>` is the live room label and ships as `1.`; Mountain's is the
+chapter numeral `I.`. Those are HUD readouts that happen to be marked up as
+headings — a presence check scores both as fine while the page tells Google it is
+called "1.". The test is therefore whether the served heading contains real
+WORDS: strip non-letters, require three. `1.` → `""` and `I.` → `"I"` both fail;
+`Veilfall` passes. Those two pages now lead with a proper name and keep their HUD
+heading, which is legal HTML5 and strictly better than a numeral being the only
+heading. The correct fix belongs in those games — a HUD readout should be a
+`<div>` — and is recorded rather than silently patched, because this port does
+not edit game source.
+
+**Hidden by the clip-rect pattern, never `display:none` or `visibility:hidden`.**
+Both of those remove the text from the accessibility tree *and* are discounted by
+search engines, which would make the heading decorative and pointless — invisible
+to people and to machines at once. The gate asserts the distinction rather than
+trusting it.
+
+New gate `scripts/verify-seo-headings.mjs` (36 checks), wired into
+`verify-all.sh`: served bytes carry a worded `<h1>`, the leading one names the
+entry, and the hidden heading has zero visual footprint while still resolving via
+`getByRole('heading')` — which reads the accessibility tree, so a heading it finds
+is one a screen reader can announce. **Proven to fail** by reverting the build to
+a naive presence check: Emberkeep immediately goes red with `first: "1."`.
+
+Underglory's injected `h1` duplicates an existing `h2` of the same name (the gate
+reports `2 match`). Harmless, and the outline is now correct; promoting that `h2`
+instead would mean editing game source.

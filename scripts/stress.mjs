@@ -139,6 +139,7 @@ async function shard([id, url]) {
         deprecated: ['center','font','marquee','blink','big'].filter(t => document.querySelector(t)).length,
         inlineHandlers: document.querySelectorAll('[onclick],[onload],[onerror]').length,
         h1: document.querySelectorAll('h1').length,
+        h1Texts: [...document.querySelectorAll('h1')].map(h => (h.textContent||'').trim().slice(0,28)),
       };
     });
     if (!web.lang) add(id, 'BLOCK', 'no <html lang> — screen readers pick the wrong voice');
@@ -151,7 +152,7 @@ async function shard([id, url]) {
     if (web.deprecated) add(id, 'WARN', `${web.deprecated} deprecated tag type(s)`);
     if (web.inlineHandlers) add(id, 'BLOCK', `${web.inlineHandlers} inline event handler(s) — CSP script-src 'self' forbids these`);
     if (web.h1 === 0) add(id, 'WARN', 'no <h1>');
-    if (web.h1 > 1) add(id, 'WARN', `${web.h1} <h1> elements`);
+    if (web.h1 > 1) add(id, 'WARN', `${web.h1} <h1> elements: ${web.h1Texts.join(' | ')}`);
 
     /* ── 3. KEYBOARD REACHABILITY ─────────────────────────────────────────
      * NO CLICK before this. An earlier version clicked the page first "like a
