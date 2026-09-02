@@ -41,7 +41,7 @@ const OUT = path.join(ROOT, 'dist');
  */
 const ENTRIES = [
   {
-    id: 'prism-cascade', name: 'Prism Cascade', tagline: 'Charge, shatter, splash. 100 levels of physics arcade.',
+    id: 'prism-cascade', site: 'https://dhseadev.online/projects/prism-cascade/', name: 'Prism Cascade', tagline: 'Charge, shatter, splash. 100 levels of physics arcade.',
     seoTitle: 'Prism Cascade — free physics arcade game in your browser',
     seoDesc: 'Charge, shatter and splash your way through 100 levels of physics arcade. 6 challenge runs, 83 achievements, generative music. Free, no install, no account.',
     genre: 'Arcade',
@@ -49,7 +49,7 @@ const ENTRIES = [
     drop: ['popup.html', 'popup.js', 'popup.css', 'manifest.json', 'newtab.html', 'store'],
   },
   {
-    id: 'lumenreel', name: 'Lumenreel — Prism Crash', tagline: 'A slot machine where time is the only currency. 125 critters.',
+    id: 'lumenreel', site: 'https://dhseadev.online/projects/lumenreel/', name: 'Lumenreel — Prism Crash', tagline: 'A slot machine where time is the only currency. 125 critters.',
     seoTitle: 'Lumenreel — free collect-a-thon slot game, no money ever',
     seoDesc: 'A prism slot machine where time is the only currency. Collect 125 critters across two skins. There is no money in this game and no way to add any.',
     genre: 'Casual',
@@ -57,7 +57,7 @@ const ENTRIES = [
     drop: ['sw.js', 'manifest.json', 'Assetts'],
   },
   {
-    id: 'underglory', name: 'Underglory', tagline: 'A hundred hand-drawn mazes. Grow a morning glory to the arch.',
+    id: 'underglory', site: 'https://dhseadev.online/projects/underglory/', name: 'Underglory', tagline: 'A hundred hand-drawn mazes. Grow a morning glory to the arch.',
     seoTitle: 'Underglory — 100 hand-drawn maze puzzles, free in browser',
     seoDesc: 'A hundred hand-drawn mazes. Grow a morning glory up trellises and rails to reach the arch. Offline, no account, no tracking.',
     genre: 'Puzzle',
@@ -65,7 +65,7 @@ const ENTRIES = [
     drop: ['popup.html', 'popup.js', 'manifest.json'],
   },
   {
-    id: 'veilfall', name: 'Veilfall', tagline: 'Nine souls, one hidden traitor. Solo social deduction.',
+    id: 'veilfall', site: 'https://dhseadev.online/projects/veilfall/', name: 'Veilfall', tagline: 'Nine souls, one hidden traitor. Solo social deduction.',
     seoTitle: 'Veilfall — solo social deduction against AI opponents, free',
     seoDesc: 'Nine souls, one hidden traitor, eight opponents who each know only their own calling. Plays completely offline; add your own Groq key for improvised dialogue.',
     genre: 'Strategy',
@@ -73,7 +73,7 @@ const ENTRIES = [
     drop: ['background.js', 'manifest.json', 'README.md'],
   },
   {
-    id: 'emberkeep', name: 'Emberkeep', tagline: 'Carry the light through the keep. A puzzle platformer.',
+    id: 'emberkeep', site: 'https://dhseadev.online/projects/emberkeep/', name: 'Emberkeep', tagline: 'Carry the light through the keep. A puzzle platformer.',
     seoTitle: 'Emberkeep — a puzzle platformer about carrying light, free',
     seoDesc: 'Carry the light through the keep without letting it go out. A hand-built puzzle platformer with generated music and no assets to download.',
     genre: 'Platformer',
@@ -81,7 +81,7 @@ const ENTRIES = [
     drop: ['background.js', 'manifest.json'],
   },
   {
-    id: 'emberkeep-mountain', name: 'Emberkeep — Mountain', tagline: 'The isometric ascent. Light the mountain.',
+    id: 'emberkeep-mountain', site: 'https://dhseadev.online/projects/emberkeep-mountain/', name: 'Emberkeep — Mountain', tagline: 'The isometric ascent. Light the mountain.',
     seoTitle: 'Emberkeep Mountain — isometric light puzzle, free in browser',
     seoDesc: 'The isometric ascent. Route light up the mountain across shifting lattices. A standalone sequel to Emberkeep.',
     genre: 'Puzzle',
@@ -89,7 +89,7 @@ const ENTRIES = [
     drop: ['background.js', 'manifest.json'],
   },
   {
-    id: 'bloom-rush', name: 'Bloom Rush', tagline: 'Propagation Station. Pot, water, ship — before the bell.',
+    id: 'bloom-rush', site: 'https://dhseadev.online/projects/bloom-rush/', name: 'Bloom Rush', tagline: 'Propagation Station. Pot, water, ship — before the bell.',
     // Not singleFile any more: its two inline <script> blocks were extracted to
     // files so the whole arcade can run under one strict CSP with no carve-out,
     // and a save/load block was added (it shipped with no persistence at all).
@@ -99,7 +99,7 @@ const ENTRIES = [
     dir: 'bloom-rush', entry: 'index.html', drop: ['index.html.orig'],
   },
   {
-    id: 'planet-express-lounge', name: 'Planet Express Lounge',
+    id: 'planet-express-lounge', site: 'https://dhseadev.online/projects/planet-express-lounge/', name: 'Planet Express Lounge',
     tagline: 'An AI sitcom engine. Chat with the crew, or let them run an episode.',
     type: 'app', appCategory: 'EntertainmentApplication',
     seoTitle: 'Planet Express Lounge — an AI sitcom engine in your browser',
@@ -144,6 +144,12 @@ const ALWAYS_DROP = new Set(['manifest.json', 'store', 'Assetts', '.git', 'node_
  * Generated from the GAMES table, so the metadata cannot drift from what ships:
  * a game with no seoTitle fails the build rather than shipping bare.
  */
+/** The dhseadev.online showcase page for an entry. Required on every row. */
+function siteOf(game) {
+  if (!game.site) throw new Error(`${game.id}: site (project page URL) required — every arcade entry links back to its write-up`);
+  return game.site;
+}
+
 function seoHead(game, url) {
   const isApp = game.type === 'app';
   const t = game.seoTitle, d = game.seoDesc;
@@ -171,7 +177,12 @@ function seoHead(game, url) {
           : 'Requires JavaScript and HTML5 canvas',
         offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
         author: { '@type': 'Person', name: 'Donnie Harding', url: 'https://dhseadev.online/' },
-        isAccessibleForFree: true, inLanguage: 'en' },
+        isAccessibleForFree: true, inLanguage: 'en',
+        /* The showcase page on dhseadev.online is the canonical write-up for this
+         * entry; sameAs ties the two nodes together for a crawler. Every row
+         * must carry one — an arcade entry with no project page is unlinked
+         * from the rest of the portfolio, which is a build error, not a nicety. */
+        sameAs: [siteOf(game)] },
       { '@type': 'BreadcrumbList', itemListElement: [
         { '@type': 'ListItem', position: 1, name: 'DHSeaDev Arcade', item: ORIGIN + '/' },
         { '@type': 'ListItem', position: 2, name: game.name, item: abs } ] },
@@ -202,7 +213,7 @@ function injectShim(html, game, depth, url) {
   ).join('\n');
   const icon = `<link rel="icon" href="${up}favicon.svg" type="image/svg+xml">`;
   const backbar = icon + `\n<link rel="stylesheet" href="${up}shared/arcade-bar.css">\n` +
-                  `<script src="${up}shared/arcade-bar.js" defer data-game-name="${game.name.replace(/"/g, '&quot;')}"></script>`;
+                  `<script src="${up}shared/arcade-bar.js" defer data-game-name="${game.name.replace(/"/g, '&quot;')}" data-about-url="${siteOf(game)}?utm_source=arcade&amp;utm_medium=bar"></script>`;
 
   /* An extension panel has a fixed viewport, so three of these games never
    * needed <meta viewport> and never had one. On the web its absence means a
