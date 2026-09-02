@@ -139,3 +139,22 @@ Add its source under `src-games/<id>/`, then one row in the `GAMES` table in
 The arcade index and `sitemap.xml` are both generated from that table, so a game
 cannot be shipped-but-unlisted or listed-but-shipped-nowhere. Then run
 `npm run verify`.
+
+## Links back to dhseadev.online (added 2026-09-01)
+
+Every entry row in `scripts/build.mjs` carries a required `site` — its showcase page on
+dhseadev.online. The build refuses a row without one. It is used three ways:
+
+- the game's JSON-LD carries `sameAs: [site]`, tying the arcade node to the write-up;
+- the arcade bar gets a second link, **About**, to `site?utm_source=arcade&utm_medium=bar`
+  (second link on purpose — the first tab stop is still the exit);
+- the index carries a static cross-promo section for the two Chrome extensions
+  (Annoying Dino, Dota Companion) with `utm_source=arcade&utm_medium=promo` on the
+  About links. Those cards are not entries: not counted, not rated, not shimmed.
+
+## `/embed/annoying-dino/` (added 2026-09-01)
+
+Not an arcade entry. `public/embed/annoying-dino/dino.js` is the unmodified page engine
+from the Annoying Dino 2.0.0 store package; dhseadev.online's Dino project page and Dino
+devlogs load it (after `/shared/chrome-shim.js` with `data-game-id="annoying-dino"`) so
+the real dinosaur runs on those pages. See the README.txt beside it.

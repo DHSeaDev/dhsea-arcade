@@ -7,3 +7,4 @@ shots/
 src-games/*/store/
 src-games/*/Assetts/
 .preship-tmp.mjs
+*.zip
