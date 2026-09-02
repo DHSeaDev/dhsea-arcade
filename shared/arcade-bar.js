@@ -60,6 +60,11 @@
     home.textContent = '← Arcade';
     bar.appendChild(home);
 
+    /* About link — the entry's write-up on dhseadev.online. Second link, so the
+     * first tab stop is still the exit. Opens in the same tab on purpose: it is
+     * navigation away from the game, not a side reference, and a new tab from
+     * a full-viewport canvas leaves the game running unattended behind it. */
+    var about = (tag && tag.dataset && tag.dataset.aboutUrl) || '';
     if (name) {
       var sep = document.createElement('span');
       sep.className = 'ab-sep';
@@ -70,6 +75,19 @@
       who.className = 'ab-name';
       who.textContent = name;   // textContent, never innerHTML
       bar.appendChild(who);
+    }
+    if (about) {
+      var sep2 = document.createElement('span');
+      sep2.className = 'ab-sep';
+      sep2.setAttribute('aria-hidden', 'true');
+      sep2.textContent = '/';
+      bar.appendChild(sep2);
+      var ab = document.createElement('a');
+      ab.href = about;
+      ab.className = 'ab-about';
+      ab.textContent = 'About';
+      ab.setAttribute('aria-label', 'About ' + (name || 'this game') + ' on dhseadev.online');
+      bar.appendChild(ab);
     }
 
     // Surfaced only when the shim actually failed to reach persistent storage,
