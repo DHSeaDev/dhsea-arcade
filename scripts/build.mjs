@@ -110,7 +110,26 @@ const ENTRIES = [
      * harmful: the arcade shim would win the runtime.onMessage property and
      * silently kill the Dark Matter economy. */
     shims: ['pe-web-shim.js', 'pe-web-background.js', 'pel-web-enhance.js'],
-    drop: ['popup.html', 'popup.js', 'background.js', 'manifest.json', 'README.md', 'store_listing_description.txt'],
+    drop: ['popup.html', 'popup.js', 'background.js', 'manifest.json', 'README.md', 'store_listing_description.txt',
+           /* Extension first-run page. Its CTA is onclick="window.close()" —
+            * meaningless in a tab, and the only inline handler in the shipped
+            * tree, which is precisely what script-src 'self' blocks. */
+           'welcome.html'],
+  },
+  {
+    id: 'prismwar', name: 'Prismwar', tagline: 'Six colors, one Undertow. An original card battler vs a computer rival.',
+    seoTitle: 'Prismwar — free six-color trading card game vs an AI rival',
+    seoDesc: 'An original six-color card battler: build decks from a 250-card set, earn packs from daily quests, unlock ten legendary Ascendants with signed codes, and play a computer rival that trades, blocks and ambushes. No account, no purchases, no network.',
+    genre: 'Strategy',
+    dir: 'prismwar', entry: 'index.html',
+    /* Ledger wall: a playhtml room of posted ledger cards at /games/prismwar/ledger/. */
+    bundles: [{ entry: 'ledger/wall-boot.js', out: 'ledger/wall.bundle.js' }],
+    /* Authored for the web, not ported. Its storage layer uses chrome.storage.local
+     * when present and localStorage otherwise, so the default arcade shim gives it
+     * the same namespaced-storage contract verify.mjs holds every entry to. It
+     * touches no chrome.runtime API, so the PEL dead-listener hazard does not apply.
+     * Declares its own viewport, worded h1 and CSP meta. */
+    drop: [],
   },
 ];
 
@@ -290,6 +309,24 @@ async function copyGame(game) {
 
   const entryOut = path.join(to, game.entry);
   if (!existsSync(entryOut)) throw new Error(`${game.id}: entry ${game.entry} missing after copy`);
+
+  /* Per-game ESM bundles (e.g. a playhtml wall). The unbundled source carries a
+   * bare `import 'playhtml'` no browser can resolve, so it is bundled from the
+   * SOURCE tree and the raw copy is removed from dist — shipping it would put a
+   * guaranteed-broken file on the origin. Same CDN-stylesheet rewrite as the
+   * shared bundle, for the same CSP reason. */
+  for (const b of game.bundles || []) {
+    const { build: esb } = await import('esbuild');
+    const outfile = path.join(to, b.out);
+    await esb({ entryPoints: [path.join(from, b.entry)], outfile, bundle: true, format: 'esm', target: 'es2020', minify: true, sourcemap: false, legalComments: 'none' });
+    await rm(path.join(to, b.entry), { force: true });
+    let src = await readFile(outfile, 'utf8');
+    const cdn = 'https://unpkg.com/playhtml@latest/dist/style.css';
+    const n = src.split(cdn).length - 1;
+    if (n > 1) throw new Error(`${game.id}: ${b.out} references the playhtml CDN stylesheet ${n} times — expected 0 or 1`);
+    if (n === 1) { src = src.replace(cdn, '/shared/playhtml.css'); await writeFile(outfile, src); }
+    console.log(`  bundled ${game.id}/${b.out}${n ? ' (CDN stylesheet self-hosted)' : ''}`);
+  }
 
   /**
    * Rename the entry document to index.html IN PLACE so the URL is a clean
@@ -493,5 +530,45 @@ await writeFile(path.join(OUT, 'sitemap.xml'),
   '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
   urls.map(u => `  <url><loc>${ORIGIN}${u}</loc></url>`).join('\n') +
   '\n</urlset>\n');
+
+/* 404.html — WITHOUT this file Cloudflare Pages answers every unmatched
+ * path with the arcade index at HTTP 200. Measured before this was added:
+ * /nope.html, /this/path/does/not/exist and /games/veilfall/manifest.json all
+ * returned 200 and the full index page. That is a soft 404 — search engines
+ * index unbounded duplicate URLs, and a mistyped <script src> receives HTML
+ * instead of a clean failure, so the console shows a parse error rather than a
+ * missing file. Pages serves this file with a real 404 status.
+ *
+ * It is deliberately NOT in sitemap.xml, and carries noindex so the page
+ * itself never enters an index. */
+const notFound = `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, follow">
+<title>Not found — DHSeaDev Arcade</title>
+<style>
+  :root { color-scheme: dark; }
+  body { margin:0; min-height:100vh; display:grid; place-items:center;
+         background:#12151F; color:#E8ECF6; text-align:center; padding:2rem;
+         font:16px/1.6 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+  h1 { font-size:clamp(2rem,6vw,3rem); margin:0 0 .5rem; letter-spacing:.02em; }
+  p  { color:#B6BFD4; margin:0 0 1.75rem; max-width:38ch; }
+  a  { display:inline-block; padding:.7rem 1.4rem; border-radius:.5rem;
+       border:1px solid #6D5BD0; color:#DDD6FE; text-decoration:none; }
+  a:hover, a:focus-visible { background:#6D5BD0; color:#fff; }
+</style>
+</head>
+<body>
+  <main>
+    <h1>Nothing here</h1>
+    <p>That page is not part of the arcade. The games are all one click away.</p>
+    <a href="/">Back to the arcade</a>
+  </main>
+</body>
+</html>
+`;
+await writeFile(path.join(OUT, '404.html'), notFound);
 
 console.log(`\n${GAMES.length} games + ${APPS.length} app${APPS.length === 1 ? '' : 's'}, dist = ${(await dirSize(OUT) / 1048576).toFixed(2)} MB`);

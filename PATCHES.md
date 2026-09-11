@@ -343,3 +343,15 @@ a naive presence check: Emberkeep immediately goes red with `first: "1."`.
 Underglory's injected `h1` duplicates an existing `h2` of the same name (the gate
 reports `2 match`). Harmless, and the outline is now correct; promoting that `h2`
 instead would mean editing game source.
+
+## 2026-09-10 — Prismwar seated as entry #9; three gates had hardcoded entry lists
+
+- **New entry `prismwar`** (`src-games/prismwar/`, authored for the web, not ported). Uses the default
+  arcade shim for the storage contract only; touches no `chrome.runtime`.
+- **`verify.mjs`, `stress.mjs`, `verify-seo-headings.mjs` each carried their own copy of the entry
+  list**, so a new ENTRIES row was built, listed in the sitemap and llms.txt, and never tested by
+  three of the gates. Prismwar added to all three. The lists should be derived from `build.mjs`'s
+  ENTRIES table; left as a follow-up because it changes three files' import shape.
+- **`verify.mjs` gate false positive**: an external WebSocket failure (playhtml's party server)
+  logs a console error the external-host filter never saw, so ARCADE INDEX went red in a sandbox
+  with no egress. Routed to the environmental bucket; a `ws://localhost` failure is still an error.

@@ -1,7 +1,7 @@
 # Cloudflare Pages headers.
 #
-# CSP is strict on purpose and it is CHEAP here: a source audit of all seven
-# games found zero inline event handlers, zero eval, zero new Function, and zero
+# CSP is strict on purpose and it is CHEAP here: a source audit of all eight
+# entries found zero inline event handlers, zero eval, zero new Function, and zero
 # Workers — MV3 already forbade all of that, so the games were written without
 # them. Bloom Rush's two inline <script> blocks are extracted to a file at build
 # time so it does not need a carve-out either.

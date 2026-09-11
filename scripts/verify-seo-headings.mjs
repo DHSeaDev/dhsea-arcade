@@ -45,6 +45,7 @@ const ENTRIES = [
   ['emberkeep-mountain','games/emberkeep-mountain/','Emberkeep'],
   ['bloom-rush','games/bloom-rush/','Bloom Rush'],
   ['planet-express-lounge','games/planet-express-lounge/','Planet Express'],
+  ['prismwar','games/prismwar/','Prismwar'],
 ];
 
 const rows = [];

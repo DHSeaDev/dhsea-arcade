@@ -60,6 +60,7 @@ const GAMES = [
   ['emberkeep-mountain', 'games/emberkeep-mountain/'],
   ['bloom-rush', 'games/bloom-rush/'],
   ['planet-express-lounge', 'games/planet-express-lounge/'],
+  ['prismwar', 'games/prismwar/'],
 ];
 
 const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ['--no-sandbox','--disable-dev-shm-usage'] });
@@ -84,6 +85,13 @@ for (const [id, url] of [['ARCADE INDEX', ''], ...GAMES]) {
     // Chrome logs a generic "Failed to load resource" for the same external
     // fetches; drop only those, and only when an external failure explains them.
     if (/Content Security Policy|Refused to/i.test(m.text())) { errors.push('CSP: ' + m.text()); return; }
+    /* A WebSocket to an external host (playhtml's party server) that cannot connect
+     * logs a console error with the wss:// URL in it and never appears as a
+     * requestfailed event, so the external-host filter above never saw it: in a
+     * sandbox with no egress the ARCADE INDEX row went red on an environmental
+     * failure (2026-09-10). Same class as the "Failed to load resource" case — route
+     * it to the environmental bucket when the URL is not this server's. */
+    if (m.type() === 'error' && /WebSocket connection to '(wss?|https?):\/\/(?!localhost)/.test(m.text())) { external.push('console: ' + m.text()); const i = errors.indexOf('console: ' + m.text()); if (i >= 0) errors.splice(i, 1); return; }
     if (m.type() === 'error' && /Failed to load resource/.test(m.text()) && external.length) {
       external.push('console: ' + m.text());
       const i = errors.indexOf('console: ' + m.text());

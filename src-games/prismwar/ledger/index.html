@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prismwar Ledger Wall — DHSeaDev</title>
+<meta name="description" content="A shared wall of Prismwar ledger cards: collection progress, records and Ascendants posted by players. Unaudited, playful, no accounts.">
+<link rel="canonical" href="https://play.dhseadev.online/games/prismwar/ledger/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Prismwar Ledger Wall — shared collection cards">
+<meta property="og:description" content="A shared wall of Prismwar ledger cards: collection progress, records and Ascendants posted by players. Unaudited, playful, no accounts.">
+<meta property="og:url" content="https://play.dhseadev.online/games/prismwar/ledger/">
+<meta property="og:image" content="https://play.dhseadev.online/og-card.png">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebPage","name":"Prismwar Ledger Wall","url":"https://play.dhseadev.online/games/prismwar/ledger/","description":"A shared wall of Prismwar ledger cards: collection progress, records and Ascendants posted by players.","isPartOf":{"@type":"WebSite","name":"DHSeaDev Arcade","url":"https://play.dhseadev.online/"},"about":{"@type":"VideoGame","name":"Prismwar","url":"https://play.dhseadev.online/games/prismwar/"},"author":{"@type":"Person","name":"Donnie Harding","url":"https://dhseadev.online/"},"inLanguage":"en"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"DHSeaDev Arcade","item":"https://play.dhseadev.online/"},{"@type":"ListItem","position":2,"name":"Prismwar","item":"https://play.dhseadev.online/games/prismwar/"},{"@type":"ListItem","position":3,"name":"Ledger Wall","item":"https://play.dhseadev.online/games/prismwar/ledger/"}]}]}</script>
+<link rel="stylesheet" href="wall.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Cpolygon points=%2716,3 29,27 3,27%27 fill=%27%23a066e0%27/%3E%3Cpolygon points=%2716,11 23,24 9,24%27 fill=%27%235fa8e6%27/%3E%3C/svg%3E">
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../">◀ Prismwar</a>
+  <h1>Prismwar Ledger Wall</h1>
+  <nav class="links">
+    <a href="https://dhseadev.online/prismwar-ledger/" target="_blank" rel="noopener">About the Ledger ↗</a>
+    <a href="https://dhseadev.online/projects/prismwar/" target="_blank" rel="noopener">Project page ↗</a>
+  </nav>
+</header>
+
+<section id="compose" class="panel" hidden>
+  <h2>Post this ledger card?</h2>
+  <p class="mute small">This is the card the game handed over. Posting puts it on the shared wall below for everyone who opens this page. Nothing else is sent — no account, no cookie, no tracking.</p>
+  <div id="preview" class="wall one"></div>
+  <div class="row">
+    <button id="post" class="btn primary" type="button">Post to the wall</button>
+    <button id="discard" class="btn" type="button">Discard</button>
+  </div>
+</section>
+
+<section class="panel intro">
+  <p><strong>Shared, unaudited, and cheerfully unofficial.</strong> Anyone with the game can post the ledger card from its <em>Ledger</em> tab. The wall is a live shared list (playhtml) — it is a social signal, not a leaderboard: a card's numbers come from the player's own browser, and the Sig line only tells the game whether that player's save was edited.</p>
+  <p class="small mute" id="status" role="status" aria-live="polite">Connecting to the wall…</p>
+</section>
+
+<section class="panel">
+  <div class="rowhead">
+    <h2>Latest cards</h2>
+    <span id="count" class="pill">—</span>
+  </div>
+  <div id="prismwar-wall" class="wall" can-wall aria-live="polite" aria-label="Posted ledger cards"></div>
+</section>
+
+<div id="toast" role="status" aria-live="polite" hidden></div>
+
+<footer class="foot">
+  <span>Prismwar is an original card game by <a href="https://dhseadev.online" target="_blank" rel="noopener">DHSeaDev · dhseadev.online</a>.</span>
+  <a href="../">Play Prismwar</a>
+</footer>
+
+<script type="module" src="wall.bundle.js"></script>
+</body>
+</html>

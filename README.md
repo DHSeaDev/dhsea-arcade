@@ -1,6 +1,6 @@
 # DHSeaDev Arcade
 
-Seven browser games, deployed as static files to Cloudflare Pages at
+Seven browser games and one browser app, deployed as static files to Cloudflare Pages at
 **play.dhseadev.online**.
 
 Every game here started as a Chrome MV3 extension. None of them were rewritten.
@@ -16,7 +16,7 @@ the other two.
 **`shared/chrome-shim.js`** makes `chrome.storage.local` exist, backed by
 `localStorage` and namespaced per game. That is the entire compatibility layer.
 
-A survey of all seven sources found every non-storage `chrome.*` call —
+A survey of all eight sources found every non-storage `chrome.*` call —
 `tabs.create`, `runtime.getURL`, `sidePanel.*`, `action.onClicked`,
 `runtime.onInstalled`, `windows.update`, `alarms` — lives **only** in launcher
 files (`popup.js`, `sw.js`, `background.js`) whose sole job was to open the game
@@ -76,7 +76,7 @@ npm run serve        # local preview on :8099
 | painted something real | a blank page has no errors either |
 | shim installed, and not a real extension context | proves the web path is what ran |
 | **write → reload → read back** | a write that lands in memory looks identical to one that lands in localStorage; only the round trip separates them |
-| keys are namespaced per game | seven games share one origin |
+| keys are namespaced per game | eight entries share one origin |
 | arcade bar present | — |
 
 Plus two targeted suites: Bloom Rush's own persistence layer (round trip,
@@ -92,7 +92,7 @@ from our own origin is a defect.
 ## Security posture
 
 Strict CSP, and it is cheap here: a source audit found zero inline event
-handlers, zero `eval`, zero `new Function`, and zero Workers across all seven
+handlers, zero `eval`, zero `new Function`, and zero Workers across all eight
 games — MV3 already forbade them, so the games were written without them. Bloom
 Rush's two inline `<script>` blocks were extracted to files so it needs no
 carve-out either.

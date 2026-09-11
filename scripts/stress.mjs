@@ -57,6 +57,7 @@ const PAGES = [
   ['emberkeep-mountain', '/games/emberkeep-mountain/'],
   ['bloom-rush', '/games/bloom-rush/'],
   ['planet-express-lounge', '/games/planet-express-lounge/'],
+  ['prismwar', '/games/prismwar/'],
 ];
 
 const browser = await chromium.launch({

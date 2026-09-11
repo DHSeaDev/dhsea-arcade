@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>Prismwar — six-color card battler</title>
+<meta name="description" content="Prismwar: an original six-color trading card game you can play in your browser against a computer rival. Build decks, open packs from quests, write your own cards with codes.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Cpolygon points=%2716,3 29,27 3,27%27 fill=%27%23a066e0%27/%3E%3Cpolygon points=%2716,11 23,24 9,24%27 fill=%27%235fa8e6%27/%3E%3C/svg%3E">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+  <h1 class="sr">Prismwar — six-color card battler</h1>
+  <header>
+    <div class="brand" aria-hidden="true">PRISMWAR</div>
+    <nav role="tablist" aria-label="Sections" id="tabs"></nav>
+    <div class="grow"></div>
+    <div class="small mute" id="wallet" aria-live="polite"></div>
+  </header>
+  <main id="view"></main>
+  <footer class="credit small mute"><span>Prismwar v0.3 — an original card game by </span><a href="https://dhseadev.online" target="_blank" rel="noopener">DHSeaDev · dhseadev.online</a><span> · no accounts, no tracking, no network</span></footer>
+</div>
+<div id="toast" class="toast" hidden role="status" aria-live="polite"></div>
+<script src="core.js"></script>
+<script src="art.js"></script>
+<script src="cards.js"></script>
+<script src="meta.js"></script>
+<script src="audio.js"></script>
+<script src="ui.js"></script>
+</body>
+</html>

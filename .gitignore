@@ -7,3 +7,20 @@ shots/
 src-games/*/store/
 src-games/*/Assetts/
 .preship-tmp.mjs
+
+# Working files. scratch/ was published in the public repo until now; games/ is
+# a stray build artefact at the root that nothing ignored, one 'git add -A'
+# away from being committed.
+scratch/
+/games/
+
+# The one-off fix scripts Claude dropped in here. Delete them when done.
+apply-arcade-fixes.*
+
+# Delivery folder and packaged zips. "Claude outputs/" holds prismwar-owner-keys.zip
+# (the redeem-code signing key) and prismwar-launch-codes.txt — this repo is public,
+# so one 'git add -A' would publish the key and every unredeemed code.
+Claude outputs/
+*.zip
+*-owner-keys*
+*launch-codes*
