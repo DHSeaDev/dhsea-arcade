@@ -49,3 +49,8 @@
 
 /*.png
   Cache-Control: public, max-age=604800
+
+# Embeddable builds consumed by dhseadev.online (a <script src> cross-origin
+# load needs no CORS header, but the file must revalidate like game code).
+/embed/*
+  Cache-Control: public, max-age=0, must-revalidate

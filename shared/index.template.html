@@ -90,6 +90,12 @@ main{padding:2.5rem 0 1rem}
 .g-star:focus-visible{outline:2px solid #93C5FD;outline-offset:1px}
 .g-avg{margin-left:.45rem;font-family:var(--font-mono);font-size:.7rem;color:var(--muted)}
 
+/* ── cross-promo cards ───────────────────────────────────────────────────── */
+.promo .g-links{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.55rem;padding-top:.7rem;border-top:1px solid var(--border)}
+.promo .g-go{margin-top:0}
+.promo .g-about{color:var(--muted)}
+.promo .g-about:hover{color:var(--accent)}
+
 /* ── Facts + footer ───────────────────────────────────────────────────────── */
 .facts{display:grid;gap:1rem;grid-template-columns:repeat(2,1fr);margin:3rem 0 0;padding:0;list-style:none}
 @media(min-width:760px){.facts{grid-template-columns:repeat(4,1fr)}}
@@ -127,6 +133,32 @@ footer p{margin:.35rem 0}
 <!--APPS-->
     </div>
 <!--APPS_SECTION_END-->
+
+    <!-- Cross-promotion: the two Chrome extensions this studio most wants
+         found. Static on purpose — they are not arcade entries and must not be
+         counted, rated or shimmed. Links carry utm_source=arcade so the
+         referral is measurable on the other side. -->
+    <h2 class="eyebrow" style="margin:2.4rem 0 .5rem">Also from DHSeaDev — for Chrome</h2>
+    <p class="lede" style="margin:0 0 1.1rem">Two extensions that live in your browser rather than
+      on this page. Both free, both local-first, neither collects anything.</p>
+    <div class="grid promo">
+      <article class="g-card">
+        <span class="g-name">Annoying Dino 2.0</span>
+        <span class="g-tag">A mischievous dinosaur on any webpage — chases your cursor, lays eggs, survives the occasional meteor. Five species, a wardrobe, a fossil record.</span>
+        <div class="g-links">
+          <a class="g-go" href="https://chromewebstore.google.com/detail/annoying-dino/gdpmkppegbolfogggnnokogbjhldiceg" rel="noopener">GET IT ON CHROME <span aria-hidden="true">&rarr;</span></a>
+          <a class="g-go g-about" href="https://dhseadev.online/projects/annoying-dino/?utm_source=arcade&amp;utm_medium=promo">ABOUT</a>
+        </div>
+      </article>
+      <article class="g-card">
+        <span class="g-name">Dota Companion</span>
+        <span class="g-tag">Improvement streaks against your own baseline, hero stats, private notes, and a Steam inventory valuation. No account, no API key; built on OpenDota.</span>
+        <div class="g-links">
+          <a class="g-go" href="https://chromewebstore.google.com/detail/dota-companion-%E2%80%94-dhseadev/gnnamhmenhhlgjmanoofngmfeddmfbej" rel="noopener">GET IT ON CHROME <span aria-hidden="true">&rarr;</span></a>
+          <a class="g-go g-about" href="https://dhseadev.online/projects/dota-companion/?utm_source=arcade&amp;utm_medium=promo">ABOUT</a>
+        </div>
+      </article>
+    </div>
 
     <ul class="facts">
       <li><b><!--COUNT--></b><span>Games playable now</span></li>
