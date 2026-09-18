@@ -1,0 +1,89 @@
+/* Creature idle layer. Motion is STEPPED (steps()) on purpose: a low-rate hold
+   reads handmade, smooth 60fps procedural motion reads floaty. Everything here is
+   decoration — no game state depends on an animation running. */
+
+.cc { display: block; width: 100%; height: 100%; overflow: visible; }
+.cc * { transform-box: view-box; }
+
+.cc .cc-idle { animation: cc-breathe 3.6s steps(6, jump-none) infinite; transform-origin: 60px 108px; }
+.cc .cc-blink { transform: scaleY(0); animation: cc-blink 5.2s infinite; }
+.cc-plan-wisp .cc-blink, .cc-hush .cc-blink { animation-duration: 7.4s; }
+.cc .cc-wag { animation: cc-wag 2.4s steps(5, jump-none) infinite alternate; }
+.cc .cc-twitch { animation: cc-twitch 3.1s steps(2, jump-none) infinite; }
+.cc .cc-flutter { animation: cc-flutter 0.36s steps(2, jump-none) infinite alternate; }
+.cc .cc-hover { animation: cc-hover 2.8s steps(7, jump-none) infinite alternate; }
+.cc .cc-glow { animation: cc-glow 3.2s ease-in-out infinite alternate; }
+.cc .cc-float { animation: cc-float 4s steps(8, jump-none) infinite; }
+.cc .cc-sway { animation: cc-sway 4.4s steps(6, jump-none) infinite alternate; }
+.cc .cc-twinkle { animation: cc-twinkle 1.9s steps(3, jump-none) infinite alternate; }
+.cc .cc-dash { stroke-dasharray: 26 10; animation: cc-dash 3s linear infinite; }
+.cc .cc-spin { transform-origin: center; transform-box: fill-box; animation: cc-spin 5s steps(10) infinite; }
+.cc .cc-drift { animation: cc-float 6s steps(10, jump-none) infinite; }
+.cc .cc-ripple { animation: cc-dashx 4s steps(8) infinite; stroke-dasharray: 8 4; }
+.cc .cc-toss { animation: cc-toss 1.6s steps(6, jump-none) infinite alternate; }
+.cc-x-alarmed .cc-idle { animation-duration: 1.1s; }
+.cc-x-sleepy .cc-idle { animation-duration: 5.5s; }
+.cc-x-sleepy .cc-blink { animation: none; }
+
+@keyframes cc-breathe { 0%, 100% { transform: scale(1, 1); } 50% { transform: scale(1.012, 0.982); } }
+/* Asymmetric blink: fast close (~90ms), slower open (~160ms) */
+@keyframes cc-blink { 0%, 93% { transform: scaleY(0); } 94.6% { transform: scaleY(1); } 97.8% { transform: scaleY(0); } 100% { transform: scaleY(0); } }
+@keyframes cc-wag { from { transform: rotate(-5deg); } to { transform: rotate(6deg); } }
+@keyframes cc-twitch { 0%, 88%, 100% { transform: rotate(0); } 92% { transform: rotate(-6deg); } 96% { transform: rotate(4deg); } }
+@keyframes cc-flutter { from { transform: scaleX(1); } to { transform: scaleX(0.82); } }
+@keyframes cc-hover { from { transform: translateY(-2px); } to { transform: translateY(3px); } }
+@keyframes cc-glow { from { opacity: 0.55; } to { opacity: 1; } }
+@keyframes cc-float { 0% { transform: translateY(0); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateY(-10px); opacity: 0; } }
+@keyframes cc-sway { from { transform: rotate(-3deg); } to { transform: rotate(3deg); } }
+@keyframes cc-twinkle { from { opacity: 0.45; } to { opacity: 1; } }
+@keyframes cc-dash { to { stroke-dashoffset: -72; } }
+@keyframes cc-dashx { to { stroke-dashoffset: -24; } }
+@keyframes cc-spin { to { transform: rotate(360deg); } }
+@keyframes cc-toss { from { transform: translateY(0); } to { transform: translateY(-6px); } }
+
+/* Reduced motion: the camp holds still. Blinks stay (tiny, infrequent, not motion-sickness relevant) off too. */
+@media (prefers-reduced-motion: reduce) {
+  .cc *, .cc .cc-idle { animation: none !important; }
+}
+.reduce-motion .cc *, .reduce-motion .cc .cc-idle { animation: none !important; }
+
+/* Juniper's legs are IK-solved OUTSIDE the posed body; a breathing scale on the body
+   alone would pull the shoulders off the legs. The fawn shifts its ears instead. */
+.cc-juniper .cc-idle { animation: none; }
+.cc-juniper .cc-head { animation: cc-twitch 4.3s steps(2, jump-none) infinite; }
+
+/* ---------- tool reactions (v1.2) ----------
+   Each playground tool has a visible reaction on the creature itself, not only a particle.
+   Every one is a short, stepped motion on a group the art already exposes (.cc-head is on
+   every body plan; .cc-idle wraps the body), and all of it is decoration: no game state
+   depends on an animation running, and reduced motion removes the lot. */
+.actor.act-pet .cc-head { animation: cc-petted 0.9s steps(6, jump-none) 1; transform-origin: 60px 70px; transform-box: view-box; }
+.actor.act-feed .cc-head { animation: cc-chew 0.24s steps(2, jump-none) 4; transform-origin: 60px 74px; transform-box: view-box; }
+.actor.act-feed .cc-idle { animation: cc-belly 1s ease-in-out 1; }
+.actor.act-play .cc-head { animation: cc-eager 0.5s steps(4, jump-none) 2; transform-origin: 60px 70px; transform-box: view-box; }
+.actor.act-dry .cc-idle { animation: cc-shake 0.16s steps(2, jump-none) 7; transform-origin: 60px 104px; }
+.actor.act-wash .cc-idle { animation: cc-lather 0.7s ease-in-out 2; transform-origin: 60px 104px; }
+
+@keyframes cc-petted { 0%, 100% { transform: translateY(0) rotate(0); } 30% { transform: translateY(2.5px) rotate(-2deg); } 60% { transform: translateY(1px) rotate(2deg); } }
+@keyframes cc-chew { from { transform: translateY(0) scaleY(1); } to { transform: translateY(0.8px) scaleY(0.97); } }
+@keyframes cc-belly { 0%, 100% { transform: scale(1, 1); } 45% { transform: scale(1.04, 0.97); } }
+@keyframes cc-eager { 0%, 100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-2px) rotate(3deg); } }
+@keyframes cc-shake { from { transform: rotate(-3.2deg); } to { transform: rotate(3.2deg); } }
+@keyframes cc-lather { 0%, 100% { transform: rotate(0) scale(1); } 25% { transform: rotate(-1.6deg) scale(1.01); } 75% { transform: rotate(1.6deg) scale(0.99); } }
+
+.reduce-motion .actor[class*="act-"] .cc-head, .reduce-motion .actor[class*="act-"] .cc-idle { animation: none !important; }
+@media (prefers-reduced-motion: reduce) { .actor[class*="act-"] .cc-head, .actor[class*="act-"] .cc-idle { animation: none !important; } }
+
+/* visitor colourways: one class per tint id in lib/share.js TINTS (CSP forbids inline styles) */
+.cc-tint-0 { filter: hue-rotate(0deg) saturate(1); }
+.cc-tint-1 { filter: hue-rotate(-18deg) saturate(1.25); }
+.cc-tint-2 { filter: hue-rotate(24deg) saturate(1.2); }
+.cc-tint-3 { filter: hue-rotate(78deg) saturate(1.1); }
+.cc-tint-4 { filter: hue-rotate(122deg) saturate(0.95); }
+.cc-tint-5 { filter: hue-rotate(168deg) saturate(1.05); }
+.cc-tint-6 { filter: hue-rotate(210deg) saturate(1); }
+.cc-tint-7 { filter: hue-rotate(250deg) saturate(1.05); }
+.cc-tint-8 { filter: hue-rotate(292deg) saturate(1.1); }
+.cc-tint-9 { filter: hue-rotate(330deg) saturate(1.05); }
+.cc-tint-10 { filter: hue-rotate(0deg) saturate(0.25); }
+.cc-tint-11 { filter: hue-rotate(0deg) saturate(0.55); }

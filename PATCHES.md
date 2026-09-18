@@ -355,3 +355,73 @@ instead would mean editing game source.
 - **`verify.mjs` gate false positive**: an external WebSocket failure (playhtml's party server)
   logs a console error the external-host filter never saw, so ARCADE INDEX went red in a sandbox
   with no egress. Routed to the environmental bucket; a `ws://localhost` failure is still an error.
+
+## 2026-09-18 — Creature Camp seated as entry #10; the four hardcoded entry lists retired
+
+### The follow-up from 2026-09-10, done
+
+`scripts/entries.mjs` is now THE table. `build.mjs` imports `ENTRIES`/`GAMES`/`APPS`
+from it, and every consumer derives its own view:
+
+| consumer | was | now |
+|---|---|---|
+| `verify.mjs` | 9 hardcoded `[id, url]` rows | `ENTRIES.map(e => [e.id, pathOf(e)])` |
+| `stress.mjs` | 10 hardcoded `[id, url]` rows | `['index','/']` + derived |
+| `verify-seo-headings.mjs` | 9 hardcoded `[id, url, expect]` rows | derived, `expect` from `h1Of(e)` |
+| `shots.mjs` | **8** hardcoded rows — already stale | derived |
+
+`shots.mjs` is the proof the class was still live: it had never been updated for
+Planet Express Lounge or Prismwar, so two shipped entries were never screenshotted
+and nobody noticed, because nothing compares that literal to anything.
+
+`pathOf` derives the served path from the entry document's own directory, so
+`lumenreel` (`ui/app.html`) and `creature-camp` (`ui/sidepanel.html`) land at
+`games/<id>/ui/` without a second place to type it. `h1Of` defaults to the name up
+to its first em-dash; the only row whose assertion changed is Planet Express Lounge,
+which tightened from `Planet Express` to the full `Planet Express Lounge` and passes.
+
+**Instrument proof, run before any of this was trusted:**
+
+- Drop the `creature-camp` row → seo-headings 40 → 38, stress 11 → 10 shards. The row
+  is genuinely iterated, not merely present.
+- Break `pathOf` for one entry → `verify.mjs` reports `FAIL creature-camp boot`,
+  `verify-seo-headings.mjs` exits 1 on ENOENT. A wrong derived path fails loudly
+  rather than being skipped.
+- Empty the table → all three guards exit 1. **`stress.mjs`'s guard did NOT fire on the
+  first attempt**: `PAGES.length !== ENTRIES.length + 1` is satisfied when both are
+  empty, so the battery ran the index page alone and printed `0 BLOCK`. A gate whose
+  emptiness check is two derived numbers compared to each other is a vacuous pass.
+  Fixed to `!ENTRIES.length || …` and re-proven.
+
+### Creature Camp source patches (declared)
+
+Two changes to `src-games/creature-camp/ui/app.js`. Both exist because the shipped
+tree reached non-storage `chrome.*` APIs — the port's founding finding does not hold
+for this entry, and the handoff that said otherwise was wrong on the bytes.
+
+1. **`MODE` falls back to `full` off-extension.** It was `get('mode') || 'panel'`.
+   At `/games/creature-camp/ui/` with no query string the app rendered as a *side
+   panel*: `#tab-play` stayed `hidden` and the whole Playground was unreachable. The
+   test is `globalThis.chrome?.runtime?.id`, the same one `vendor/storage.js` already
+   uses to pick its backend.
+2. **`openSurface()` no longer assumes `chrome.runtime.getURL`.** It called
+   `chrome.runtime.getURL(...)` unguarded and then `chrome.tabs.create`. Neither is
+   provided by `shared/chrome-shim.js`, so both buttons would have thrown. It now
+   resolves a relative URL against `location.href` and falls back to `window.open`.
+   `body.full` already hides both buttons via CSS, so on the web this path is
+   currently unreachable — it is fixed anyway, because a shipped call to an API the
+   shim does not provide is the present-but-dead class this project has paid for once.
+
+Storage needs no patch: `vendor/storage.js` prefers `chrome.storage.local` when
+present, so the default shim gives it the namespaced contract `verify.mjs` enforces.
+
+### Looked at, not just gated
+
+`body.full`, six tabs including Playground, `btn-window` `display:none`, `<h1>`
+"Creature Camp", `#arcade-bar` as first body child, zero page errors at 1280x900 and
+390x844. The stress battery's `[UNVERIFIED]` exit-reachability WARN was chased down:
+on load the first-run arrival card traps focus (correct for a modal), **Escape
+dismisses it**, and the first Tab from `<body>` then lands inside `#arcade-bar`. A
+first probe reported the exit unreachable — it was matching ids against the substring
+`arcade` and the exit link has no id. Harness bug, caught by adding a control that
+forces focus onto the link and confirms the probe can see it.

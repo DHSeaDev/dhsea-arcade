@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en" data-mode="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Creature Camp</title>
+  <link rel="stylesheet" href="sidepanel.css">
+  <link rel="stylesheet" href="creatures.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to camp</a>
+  <header class="top">
+    <h1 class="brand"><span class="brand-mark" aria-hidden="true"></span>Creature Camp</h1>
+    <p class="daychip" id="daychip">Camp day 1</p>
+    <div class="top-actions">
+      <button type="button" class="icon-btn" id="btn-theme" aria-pressed="false" title="Switch to Night mode">
+        <span class="i-moon" aria-hidden="true"></span><span class="sr">Night mode</span>
+      </button>
+      <button type="button" class="icon-btn" id="btn-sound" aria-pressed="true" title="Sound on">
+        <span class="i-sound" aria-hidden="true"></span><span class="sr">Sound</span>
+      </button>
+    </div>
+  </header>
+
+  <p class="banner" id="banner" role="status" hidden></p>
+  <button type="button" class="btn banner-btn" id="banner-action" hidden>Play here instead</button>
+
+  <div class="pg-bar" id="pg-bar">
+    <h2 class="pg-title">Playground</h2>
+    <button type="button" class="btn ghost" id="pg-full">Full screen</button>
+    <button type="button" class="btn ghost" id="pg-close">Close playground</button>
+  </div>
+
+  <nav class="tabs" role="tablist" aria-label="Camp sections">
+    <button type="button" role="tab" id="tab-camp" aria-controls="pane-camp" aria-selected="true">Camp</button>
+    <button type="button" role="tab" id="tab-play" aria-controls="pane-camp" aria-selected="false" tabindex="-1" hidden>Playground</button>
+    <button type="button" role="tab" id="tab-games" aria-controls="pane-games" aria-selected="false" tabindex="-1">Games</button>
+    <button type="button" role="tab" id="tab-journal" aria-controls="pane-journal" aria-selected="false" tabindex="-1">Journal</button>
+    <button type="button" role="tab" id="tab-bestiary" aria-controls="pane-bestiary" aria-selected="false" tabindex="-1">Bestiary</button>
+    <button type="button" role="tab" id="tab-settings" aria-controls="pane-settings" aria-selected="false" tabindex="-1">Settings</button>
+  </nav>
+
+  <main id="main">
+    <section class="pane" id="pane-camp" role="tabpanel" aria-labelledby="tab-camp" tabindex="0">
+      <div class="ticker" id="ticker" hidden>
+        <button type="button" class="ticker-pause" id="ticker-pause" aria-pressed="false" aria-label="Pause the camp ticker" title="Pause the camp ticker"><span aria-hidden="true">II</span></button>
+        <div class="ticker-win"><div class="ticker-track" id="ticker-track"></div></div>
+      </div>
+      <div class="stage" id="stage">
+        <div class="scene-wrap" id="scene"></div>
+        <div class="stones" id="stones"></div>
+        <button type="button" class="dew" id="dew" hidden title="A dew drop: tap to gather it"><span class="sr">Gather a dew drop</span></button>
+        <div class="actors" id="actors"></div>
+        <div class="bubbles" id="bubbles" aria-hidden="true"></div>
+        <div class="fx" id="fx" aria-hidden="true"></div>
+        <div class="pg-cursor" id="pg-cursor" aria-hidden="true" hidden></div>
+        <section class="pg-info" id="pg-info" aria-live="polite" aria-label="Friend and tool"></section>
+      </div>
+      <div class="pg-dock" id="pg-dock" role="radiogroup" aria-label="Tools"></div>
+
+      <p class="stage-hint muted" id="dew-hint" hidden>A dew drop is sparkling in the camp. Tap it to gather it.</p>
+      <section class="card" id="care" aria-labelledby="care-title">
+        <div class="care-head">
+          <button type="button" class="arrow" id="friend-prev" aria-label="Previous friend"><span aria-hidden="true">&#9664;</span></button>
+          <div class="care-art" id="care-art"></div>
+          <div class="care-info">
+            <h2 id="care-title">Ember</h2>
+            <p class="muted" id="care-kind">fox kit</p>
+            <div class="stats" id="care-stats"></div>
+            <p class="muted snackbowl" id="snackbowl"></p>
+            <p class="muted care-note" id="care-note" role="status"></p>
+          </div>
+          <button type="button" class="arrow" id="friend-next" aria-label="Next friend"><span aria-hidden="true">&#9654;</span></button>
+        </div>
+        <div class="care-actions" role="group" aria-label="Care actions">
+          <button type="button" class="btn" data-care="pet">Pet</button>
+          <button type="button" class="btn" data-care="feed">Snack</button>
+          <button type="button" class="btn" data-care="play">Play</button>
+          <button type="button" class="btn ghost" id="btn-rename">Rename</button>
+          <button type="button" class="btn ghost" id="btn-snap">Save picture</button>
+          <button type="button" class="btn ghost" id="btn-window">Open in a window</button>
+          <button type="button" class="btn ghost" id="btn-playground">Playground</button>
+        </div>
+        <form class="rename" id="rename-form" hidden>
+          <label for="rename-input">New name</label>
+          <input id="rename-input" maxlength="64" autocomplete="off" spellcheck="false" aria-describedby="rename-count">
+          <span class="muted count" id="rename-count">Up to 16 letters</span>
+          <button type="submit" class="btn">Save name</button>
+          <button type="button" class="btn ghost" id="rename-cancel">Cancel</button>
+        </form>
+        <details class="wardrobe" id="wardrobe">
+          <summary>Hats <span class="muted" id="hat-count"></span></summary>
+          <p class="muted" id="hat-note"></p>
+          <div class="hat-grid" id="hat-grid" role="radiogroup" aria-label="Hat for this friend"></div>
+        </details>
+        <p class="muted memento" id="memento" hidden></p>
+        <details class="picker-more">
+          <summary>Pick from a list</summary>
+          <label class="picker"><span>Choose a friend</span>
+            <select id="care-pick"></select>
+          </label>
+        </details>
+      </section>
+
+      <section class="card" aria-labelledby="goals-title">
+        <h2 id="goals-title">Next up at camp</h2>
+        <ul class="goals" id="goals"></ul>
+      </section>
+
+      <section class="card" aria-labelledby="feed-title">
+        <details id="feed-details">
+          <summary><h2 id="feed-title">Around camp</h2></summary>
+          <ol class="feed" id="feed"></ol>
+        </details>
+      </section>
+    </section>
+
+    <section class="pane" id="pane-games" role="tabpanel" aria-labelledby="tab-games" tabindex="0" hidden>
+      <div id="games-list" class="games-list"></div>
+      <div id="game-area" class="game-area" hidden></div>
+    </section>
+
+    <section class="pane" id="pane-journal" role="tabpanel" aria-labelledby="tab-journal" tabindex="0" hidden>
+      <div id="journal"></div>
+    </section>
+
+    <section class="pane" id="pane-bestiary" role="tabpanel" aria-labelledby="tab-bestiary" tabindex="0" hidden>
+      <h2 class="dex-h">Camp friends</h2>
+      <p class="muted" id="dex-count"></p>
+      <ul class="dex" id="dex"></ul>
+      <h2 class="dex-h">Special guests</h2>
+      <p class="muted" id="dex-guest-count"></p>
+      <ul class="dex" id="dex-guests"></ul>
+      <section class="card" aria-labelledby="maker-title">
+        <h2 id="maker-title">Make a visitor</h2>
+        <p class="muted">Build a creature, name it, and send the code to a friend. Visitors keep you company; they are not part of your camp roster and earn nothing for it.</p>
+        <div class="maker">
+          <div class="maker-preview" id="maker-preview" aria-hidden="true"></div>
+          <div class="maker-controls">
+            <label class="maker-row"><span>Shape</span>
+              <select id="maker-base"></select>
+            </label>
+            <label class="maker-row"><span>Colour</span>
+              <select id="maker-tint"></select>
+            </label>
+            <label class="maker-row"><span>Hat</span>
+              <select id="maker-hat"></select>
+            </label>
+            <label class="maker-row"><span>Name</span>
+              <input id="maker-name" maxlength="64" autocomplete="off" spellcheck="false" value="Visitor">
+            </label>
+          </div>
+        </div>
+        <p class="code-out" id="maker-code" role="status"></p>
+        <div class="row-btns">
+          <button type="button" class="btn" id="btn-maker-copy">Copy the code</button>
+          <button type="button" class="btn ghost" id="btn-maker-keep">Keep it at my camp</button>
+        </div>
+        <form id="guest-form" class="code-form">
+          <label for="guest-input">Someone sent you a code?</label>
+          <input id="guest-input" maxlength="120" autocomplete="off" spellcheck="false" placeholder="CC1-…">
+          <button type="submit" class="btn">Add visitor</button>
+        </form>
+        <p class="muted" id="guest-msg" role="status"></p>
+        <ul class="guest-list" id="guest-list"></ul>
+      </section>
+
+      <section class="card" aria-labelledby="code-title">
+        <h2 id="code-title">Have a special code?</h2>
+        <form id="code-form" class="code-form">
+          <label for="code-input">Code</label>
+          <input id="code-input" maxlength="40" autocomplete="off" spellcheck="false" autocapitalize="characters">
+          <button type="submit" class="btn">Redeem</button>
+        </form>
+        <p class="muted" id="code-msg" role="status"></p>
+      </section>
+    </section>
+
+    <section class="pane" id="pane-settings" role="tabpanel" aria-labelledby="tab-settings" tabindex="0" hidden>
+      <section class="card">
+        <h2>Settings</h2>
+        <label class="row"><input type="checkbox" id="set-sound"> Sound</label>
+        <label class="row"><input type="checkbox" id="set-motion"> Reduce motion (the camp holds still)</label>
+        <label class="row"><input type="checkbox" id="set-assist"> Gentle games (slower, wider targets)</label>
+        <label class="row"><input type="checkbox" id="set-ambience"> Camp sounds (wind, water, crickets, a few notes)</label>
+        <label class="row"><span>How loud</span>
+          <input type="range" id="set-ambience-vol" min="0" max="100" step="5" aria-label="Camp sound volume">
+        </label>
+        <label class="row"><input type="checkbox" id="set-screensaver"> Rest the camp after a few quiet minutes</label>
+        <label class="row"><input type="checkbox" id="set-night"> Night mode</label>
+      </section>
+      <section class="card" aria-labelledby="scene-title">
+        <h2 id="scene-title">Where the camp sits</h2>
+        <p class="muted">Every friend, stone and dew drop stays where it is — only the view changes.</p>
+        <div class="scene-pick" id="scene-pick" role="radiogroup" aria-labelledby="scene-title"></div>
+        <label class="row"><input type="checkbox" id="set-scene-shuffle"> A different view each camp day</label>
+      </section>
+      <section class="card">
+        <h2>Your camp's save</h2>
+        <p class="muted">Everything is stored on this device only. Nothing is ever sent anywhere.</p>
+        <div class="row-btns">
+          <button type="button" class="btn ghost" id="btn-export">Download a backup</button>
+          <label class="btn ghost file-btn">Restore a backup<input type="file" id="file-import" accept="application/json,.json"></label>
+        </div>
+        <div id="import-confirm" class="confirm" hidden>
+          <p id="import-text"></p>
+          <button type="button" class="btn" id="btn-import-go">Replace my camp</button>
+          <button type="button" class="btn ghost" id="btn-import-cancel">Keep my camp</button>
+        </div>
+        <p class="muted" id="io-msg" role="status"></p>
+        <button type="button" class="btn ghost" id="btn-undo-import" hidden>Undo restore</button>
+      </section>
+      <section class="card danger">
+        <h2>Start over</h2>
+        <p class="muted">Starting over deletes every friend and all progress on this device. Uninstalling the extension also deletes everything.</p>
+        <button type="button" class="btn warn" id="btn-reset">Start a new camp…</button>
+        <div id="reset-confirm" hidden>
+          <p><strong>This cannot be undone.</strong> Type <kbd>NEW CAMP</kbd> to confirm (capital letters not needed).</p>
+          <label for="reset-input" class="sr">Confirmation</label>
+          <input id="reset-input" autocomplete="off">
+          <button type="button" class="btn warn" id="btn-reset-go">Delete and start over</button>
+          <button type="button" class="btn ghost" id="btn-reset-cancel">Keep my camp</button>
+          <p class="muted" id="reset-msg" role="status"></p>
+        </div>
+      </section>
+      <section class="card">
+        <h2>About</h2>
+        <p>Creature Camp is made by <strong>DHSeaDev</strong> (dhseadev.online). Free, no ads, no accounts, no purchases, and no data ever leaves your browser. Every creature is drawn in code; nothing is random about who joins your camp.</p>
+        <p class="muted" id="about-version"></p>
+      </section>
+    </section>
+  </main>
+
+  <div class="modal" id="arrival" role="dialog" aria-modal="true" aria-labelledby="arrival-title" hidden>
+    <div class="modal-card">
+      <div class="arrival-art" id="arrival-art"></div>
+      <h2 id="arrival-title">A new friend!</h2>
+      <p id="arrival-text"></p>
+      <form id="arrival-form" class="rename" hidden>
+        <label for="arrival-name">Give your first friend a name</label>
+        <input id="arrival-name" maxlength="64" autocomplete="off" spellcheck="false" aria-describedby="arrival-count">
+        <span class="muted count" id="arrival-count">Up to 16 letters</span>
+      </form>
+      <button type="button" class="btn" id="arrival-ok">Welcome to camp</button>
+    </div>
+  </div>
+
+  <p class="sr" id="live" aria-live="polite"></p>
+</body>
+</html>

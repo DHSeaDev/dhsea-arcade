@@ -23,6 +23,7 @@ import { chromium } from 'playwright';
 import http from 'node:http';
 import { readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
+import { ENTRIES, pathOf, h1Of } from './entries.mjs';
 
 const OUT = path.resolve(import.meta.dirname, '..', 'dist');
 const T = { '.html':'text/html','.js':'text/javascript','.css':'text/css','.png':'image/png','.svg':'image/svg+xml' };
@@ -36,17 +37,11 @@ const srv = http.createServer(async (q, r) => {
 }).listen(0);
 const BASE = `http://127.0.0.1:${srv.address().port}`;
 
-const ENTRIES = [
-  ['prism-cascade','games/prism-cascade/','Prism Cascade'],
-  ['lumenreel','games/lumenreel/ui/','Lumenreel'],
-  ['underglory','games/underglory/','Underglory'],
-  ['veilfall','games/veilfall/','Veilfall'],
-  ['emberkeep','games/emberkeep/','Emberkeep'],
-  ['emberkeep-mountain','games/emberkeep-mountain/','Emberkeep'],
-  ['bloom-rush','games/bloom-rush/','Bloom Rush'],
-  ['planet-express-lounge','games/planet-express-lounge/','Planet Express'],
-  ['prismwar','games/prismwar/','Prismwar'],
-];
+/* DERIVED from scripts/entries.mjs — see the note in verify.mjs. */
+const ROWS = ENTRIES.map(e => [e.id, pathOf(e), h1Of(e)]);
+if (ROWS.length !== ENTRIES.length || ROWS.length === 0) {
+  console.error('seo-headings: derived row list is empty or lossy'); process.exit(1);
+}
 
 const rows = [];
 const ok = (n, pass, d = '') => rows.push({ n, pass: !!pass, d });
@@ -56,7 +51,7 @@ const browser = await chromium.launch({
   args: ['--no-sandbox', '--disable-dev-shm-usage'],
 });
 
-for (const [id, url, expect] of ENTRIES) {
+for (const [id, url, expect] of ROWS) {
   // 1. SERVED BYTES — what a JS-less crawler sees.
   const raw = await readFile(path.join(OUT, url, 'index.html'), 'utf8');
   const heads = [...raw.matchAll(/<h1[^>]*>([\s\S]*?)<\/h1>/gi)]

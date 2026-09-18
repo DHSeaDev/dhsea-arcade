@@ -15,6 +15,7 @@ import { chromium } from 'playwright';
 import http from 'node:http';
 import { readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
+import { ENTRIES, pathOf, h1Of } from './entries.mjs';
 
 const OUT = path.resolve(import.meta.dirname, '..', 'dist');
 const PORT = 8099;
@@ -51,17 +52,12 @@ await new Promise(r => server.listen(PORT, r));
 /* Apps are verified on the SAME terms as games — boot, paint, shim, back
  * control, save-across-reload, namespacing. An entry exempted from the gate
  * because it is "not a game" is an entry with no gate. */
-const GAMES = [
-  ['prism-cascade', 'games/prism-cascade/'],
-  ['lumenreel', 'games/lumenreel/ui/'],
-  ['underglory', 'games/underglory/'],
-  ['veilfall', 'games/veilfall/'],
-  ['emberkeep', 'games/emberkeep/'],
-  ['emberkeep-mountain', 'games/emberkeep-mountain/'],
-  ['bloom-rush', 'games/bloom-rush/'],
-  ['planet-express-lounge', 'games/planet-express-lounge/'],
-  ['prismwar', 'games/prismwar/'],
-];
+/* DERIVED from scripts/entries.mjs, never retyped. A hardcoded copy of this list
+ * is how Prismwar shipped untested: the row existed in the build and in no gate. */
+const GAMES = ENTRIES.map(e => [e.id, pathOf(e)]);
+if (GAMES.length !== ENTRIES.length || GAMES.length === 0) {
+  console.error('verify: derived entry list is empty or lossy'); process.exit(1);
+}
 
 const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ['--no-sandbox','--disable-dev-shm-usage'] });
 const results = [];

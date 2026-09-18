@@ -21,6 +21,7 @@ import { chromium } from 'playwright';
 import http from 'node:http';
 import { readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
+import { ENTRIES, pathOf, h1Of } from './entries.mjs';
 
 const OUT = path.resolve(import.meta.dirname, '..', 'dist');
 const CSP = ((await readFile(path.join(OUT, '_headers'), 'utf8'))
@@ -47,18 +48,11 @@ const srv = http.createServer(async (q, r) => {
 const PORT = srv.address().port;
 const BASE = `http://127.0.0.1:${PORT}`;
 
-const PAGES = [
-  ['index', '/'],
-  ['prism-cascade', '/games/prism-cascade/'],
-  ['lumenreel', '/games/lumenreel/ui/'],
-  ['underglory', '/games/underglory/'],
-  ['veilfall', '/games/veilfall/'],
-  ['emberkeep', '/games/emberkeep/'],
-  ['emberkeep-mountain', '/games/emberkeep-mountain/'],
-  ['bloom-rush', '/games/bloom-rush/'],
-  ['planet-express-lounge', '/games/planet-express-lounge/'],
-  ['prismwar', '/games/prismwar/'],
-];
+/* DERIVED from scripts/entries.mjs — see the note in verify.mjs. */
+const PAGES = [['index', '/'], ...ENTRIES.map(e => [e.id, '/' + pathOf(e)])];
+if (!ENTRIES.length || PAGES.length !== ENTRIES.length + 1) {
+  console.error('stress: derived page list is lossy'); process.exit(1);
+}
 
 const browser = await chromium.launch({
   executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome',
