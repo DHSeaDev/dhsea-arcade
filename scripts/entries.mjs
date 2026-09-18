@@ -117,7 +117,15 @@ export const ENTRIES = [
      * the same namespaced-storage contract verify.mjs holds every entry to. It
      * touches no chrome.runtime API, so the PEL dead-listener hazard does not apply.
      * Declares its own viewport, worded h1 and CSP meta. */
-    drop: [],
+    /* ext/ is the packaged Chrome extension (same 8 game files + manifest/sw/icons).
+     * It lives in the repo so it stops existing only inside a delivered zip, but
+     * copyGame copies every entry not named here, so without this drop the whole
+     * bundle would be published to /games/prismwar/ext/ on the public arcade. */
+    /* package.json is a `{"type":"commonjs"}` marker, not a game file. The repo root declares
+       "type":"module", so on Node >=22 require(esm) loads these UMD files as ES modules, the
+       `module.exports` branch never runs, and verify-prismwar.mjs dies on `undefined.length` —
+       the rules gate could not run at all without it. Dropped so it never reaches the arcade. */
+    drop: ['ext', 'package.json', 'Claude outputs'],
   },
   {
     id: 'creature-camp', site: 'https://dhseadev.online/projects/creature-camp/', name: 'Creature Camp',
