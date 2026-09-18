@@ -467,3 +467,51 @@ can reshuffle it again.
 
 Pane fill at 1073px in the dew state: **50% → 77%**, and the layout is now byte-identical
 with the hint shown or hidden (`#care` delta 0 at every width from 820 to 1440).
+
+## 2026-09-18 (third pass) — the Playground tab was not the Playground
+
+### The tap tools did nothing when you clicked a friend
+
+`PLAYGROUND` is `MODE === 'playground'` — the dedicated `?mode=playground` surface, decided
+once at load from the URL. In the web build the playground is ALSO a tab over the same stage
+(`body.pg`, set in the tab handler), and three runtime guards were written against that
+load-time constant:
+
+| line | guard | consequence in the tab |
+|---|---|---|
+| actor click | `if (PLAYGROUND) pg?.useOn(...)` | clicking a friend called **nothing** |
+| `renderAll` | `if (PLAYGROUND) { pg?.render(); return; }` | the playground never took the render path |
+
+So Hand, Snack and Ball were inert in the tab, while the scrub tools (Soap, Cloth) still
+worked because they bind to `stage` pointer events in `playground.js`, not to the actor click
+in `app.js`. That asymmetry is exactly what it looked like from the outside: "clicking on the
+creatures with soap and other tools does not present their animations."
+
+Fixed with `pgOn() = PLAYGROUND || document.body.classList.contains('pg')` on the two RUNTIME
+guards. The load-time guards still ask about `MODE`, because they are about which surface
+booted, not about what is showing.
+
+Measured on the built page, using the creature's own `cares` counter in the save as the
+signal (the first probe counted passive per-tick stat drift as a hit and had to be tightened):
+`pet` 0 -> 1 and `snack` 1 -> 2 on a plain mouse click, where both were flat before.
+
+### The empty band under the stage — an empty row sized itself to a spanning item
+
+`#care` was `grid-row: 2 / span 2`. The hint row it spanned into sized itself to the spanning
+item whenever the hint was absent: measured at 1232px, **row 3 was 192.75px tall with the hint
+hidden and 26.8px with it shown** — dead space that appeared when there was LESS to display,
+which is why the first screenshot had a band the second did not. `#care` now occupies row 2
+only and the hint keeps row 3 to itself: row 3 is 0px hidden, 27px shown.
+
+### Still open, measured but not fixed
+- **Ball** registers no `cares` increment on a click in two runs. Pet and Snack do, so the
+  click path reaches the playground; this looks like its own gate (energy or chase state),
+  not the guard bug. Not chased.
+- **Soap by drag** applied cleanly in one pre-patch run (`clean` 70 -> 100, suds set) and not
+  in two later ones. The scrub only counts while `elementFromPoint` stays over the SAME actor,
+  and friends wander during the scrub — a likely cause, unproven. **[UNVERIFIED]**
+- **Lost progress could not be reproduced.** The save survives a reload and a new page in the
+  same profile (`creature-camp:creaturecamp_save_v1`, name and moment count intact). A second
+  open surface does open READ-ONLY behind the writer-lock banner, and `apply()` returns early
+  on `readOnly`, so playing in the second surface would be silently discarded — the most
+  plausible mechanism, but not confirmed as what happened.

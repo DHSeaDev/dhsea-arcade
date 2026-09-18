@@ -43,6 +43,12 @@ const VERSION = chrome?.runtime?.getManifest?.().version ?? 'dev';
 const MODE = new URLSearchParams(location.search).get('mode')
   || (globalThis.chrome?.runtime?.id ? 'panel' : 'full');
 const PLAYGROUND = MODE === 'playground';
+// PLAYGROUND is the dedicated ?mode=playground SURFACE, fixed at load. In the web build the
+// playground is also a TAB over the same stage (body.pg), and every runtime guard written as
+// `if (PLAYGROUND)` stayed false there — so clicking a friend with a tap tool (Hand, Snack,
+// Ball) called nothing at all. Scrub tools still worked because they bind to the stage itself.
+// Runtime guards ask whether the playground is SHOWING; load-time ones still ask about MODE.
+const pgOn = () => PLAYGROUND || document.body.classList.contains('pg');
 const FULL = MODE === 'full';        // the whole app in a browser tab, playground included
 // Opened by the player from another surface: this window is where they mean to play, so it
 // takes the writer instead of landing read-only behind a "Play here instead" banner.
@@ -380,7 +386,7 @@ function renderAll() {
   renderActors();
   renderStones();
   renderCare();
-  if (PLAYGROUND) { pg?.render(); return; }
+  if (pgOn()) { pg?.render(); return; }
   renderGoals();
   renderTicker();
   renderFeed();
@@ -435,7 +441,7 @@ function renderActors() {
     let el = actorEls.get(c.key);
     if (!el) {
       el = h('button', { type: 'button', class: 'actor', dataset: { key: c.key } });
-      el.addEventListener('click', real((e) => { select(c.key); if (PLAYGROUND) pg?.useOn(c.key, e); }));
+      el.addEventListener('click', real((e) => { select(c.key); if (pgOn()) pg?.useOn(c.key, e); }));
       host.append(el);
       actorEls.set(c.key, el);
       motion.set(c.key, { x: c.x, y: c.y, tx: c.x, ty: c.y, wait: Math.random() * 4, hold: false });
