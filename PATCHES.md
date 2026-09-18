@@ -425,3 +425,45 @@ dismisses it**, and the first Tab from `<body>` then lands inside `#arcade-bar`.
 first probe reported the exit unreachable — it was matching ids against the substring
 `arcade` and the exit link has no id. Harness bug, caught by adding a control that
 forces focus onto the link and confirms the probe can see it.
+
+## 2026-09-18 (later) — two layout defects found by stress-testing the LIVE arcade
+
+Both are `body.full` only: the extension's side panel never sets that class, and
+`?mode=panel` was re-tested at 360px and 400px with the tab strip hit-testing correctly,
+so nothing on the Chrome Web Store is affected. Both arrived with the web port.
+
+### 1. BLOCKER — every tab was dead to mouse and touch below 760px
+
+`@media (max-width: 760px)` set `body.full #pane-camp > .stage { position: static }`.
+`.scene-wrap` (and its `svg`) are `position: absolute; inset: 0`, so the stage was their
+containing block — until that media query removed it. The scene then resolved against the
+initial containing block and painted across the tab strip at y=96, swallowing every click.
+
+Measured on the live arcade before the fix: a real `mouse.down`/`mouse.up` on the centre of
+`#tab-play` at 700px left `aria-selected="false"`; the same click at 900px worked.
+`document.elementFromPoint` on the tab's centre returned `rect → svg → #scene.scene-wrap →
+#stage → #pane-camp → #main`. Keyboard still worked (ArrowRight selected the tab), so this
+was pointer-only — which on a phone means the app has no navigation at all.
+
+Fixed by `position: relative`, which un-sticks the stage exactly as `static` did while
+keeping it a containing block. **Proven able to fail**: re-injecting `position: static`
+into the built page at 700px puts `aria-selected` back to `false`.
+
+### 2. The creature panel dropped below the stage — triggered by a dew drop, not by width
+
+`.stage-hint` is pinned to `grid-column: 1` and is only in the DOM while a dew drop is in
+camp. Under sparse auto-placement its arrival opened row 3 in column 1, and the
+auto-placed `#care` could no longer be put back in row 2 column 2 — so it landed in row 3
+column 2, beneath the stage. Revealing that one hint at 1073px moved `#care` from y=114 to
+y=511 and grew the pane from 649px to 1047px; an outline-only control moved nothing.
+
+Two intermediate attempts are recorded because each failed in an instructive way:
+`grid-auto-flow: dense` fixed `#care` but scattered the two bottom cards into opposite
+columns; pinning only the stage, hint and `#care` then let both cards jump to the empty
+row 1 and pushed the whole camp below the fold, because `#care` no longer advanced the
+placement cursor. **Every item in this grid is now explicitly placed** — ticker row 1,
+stage row 2, hint row 3, `#care` rows 2-3, the two cards row 4 — so no game-state change
+can reshuffle it again.
+
+Pane fill at 1073px in the dew state: **50% → 77%**, and the layout is now byte-identical
+with the hint shown or hidden (`#care` delta 0 at every width from 820 to 1440).

@@ -375,12 +375,29 @@ body.full { max-width: 1100px; margin: 0 auto; }
 body.full main { padding: .6rem 1rem 2rem; }
 body.full .tabs { justify-content: center; }
 body.full #pane-camp { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(280px, 1fr); gap: .9rem; align-items: start; }
-body.full #pane-camp > .ticker { grid-column: 1 / -1; }
-body.full #pane-camp > .stage { grid-column: 1; grid-row: 2 / -1; position: sticky; top: .5rem; align-self: start; }
-body.full .stage-hint { grid-column: 1; }
+body.full #pane-camp > .ticker { grid-column: 1 / -1; grid-row: 1; }
+body.full #pane-camp > .stage { grid-column: 1; grid-row: 2; position: sticky; top: .5rem; align-self: start; }
+body.full .stage-hint { grid-column: 1; grid-row: 3; }
+/* #care is pinned rather than auto-placed. .stage-hint only exists while a dew drop is
+   in camp; under sparse auto-placement its arrival opened row 3 in column 1 and #care
+   could no longer be put back in row 2 column 2, so the creature panel dropped BELOW
+   the stage (measured: y 114 -> 511 at 1073px from revealing that one hint) and left
+   the top-right of the pane empty. Pinning all three keeps the layout identical in
+   both states, and leaves the two cards to fill the row beneath, side by side. */
+body.full #pane-camp > #care { grid-column: 2; grid-row: 2 / span 2; }
+/* The two remaining cards are pinned to row 4 for the same reason: once #care stopped
+   advancing the auto-placement cursor, both jumped to the empty row 1 and pushed the camp
+   below the fold. Every item in this grid is now explicitly placed — none of them is left
+   to the cursor, so no state change can reshuffle the layout again. */
+body.full #pane-camp > .card:not(#care) { grid-row: 4; }
 body.full.pg #pane-camp { display: flex; flex-direction: column; align-items: center; }
 body.full.pg .pg-bar { display: flex; }
-@media (max-width: 760px) { body.full #pane-camp { display: block; } body.full #pane-camp > .stage { position: static; } }
+/* `static` here removed the stage's containing block, so .scene-wrap (position:absolute;
+   inset:0) escaped to the initial containing block and painted over the tab strip —
+   every tab became unclickable by mouse and touch below 760px while still working by
+   keyboard. `relative` un-sticks it AND keeps the scene contained. Measured on the live
+   arcade 2026-09-18: a real mouse click on #tab-play left aria-selected=false at 700px. */
+@media (max-width: 760px) { body.full #pane-camp { display: block; } body.full #pane-camp > .stage { position: relative; } }
 
 body.full #btn-window, body.full #btn-playground { display: none; }   /* the window IS the app; the playground is a tab */
 
