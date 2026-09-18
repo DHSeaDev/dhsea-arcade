@@ -103,7 +103,15 @@ export function mountPlayground(env) {
   }));
 
   // the ball lives in the same layer as the particles, so it is declared before them
+  // The ball is POSITIONED by its own transform and must never also be rotated: an individual
+  // `rotate` on the same element composes with that translate instead of spinning in place,
+  // and the ball orbits the stage. Measured on the live build: with `.rolling` the ball's
+  // on-screen position swung 1023px horizontally and 1027px vertically; with the class
+  // removed it held perfectly still (0px), and re-adding it brought the swing straight back.
+  // The spin now lives on an inner skin, which carries no positioning of its own.
   const ballEl = h('span', { class: 'fx-ball', 'aria-hidden': 'true', hidden: true });
+  const ballSkin = h('span', { class: 'fx-ball-skin', 'aria-hidden': 'true' });
+  ballEl.append(ballSkin);
 
   // ---- particles
   const spawn = (x, y, type, n = 4) => {
@@ -158,12 +166,13 @@ export function mountPlayground(env) {
     chase = { key, home, bx, by, phase: 'out', t: performance.now() };
     m.hold = false; m.tx = bx; m.ty = by; m.wait = 0;
     ballEl.hidden = false;
-    ballEl.classList.add('rolling');
+    ballSkin.classList.add('rolling');
     ballEl.style.transform = `translate(${(bx * env.stageBox.w).toFixed(0)}px, ${(by * env.stageBox.h).toFixed(0)}px)`;
   }
   function endChase() {
     ballEl.hidden = true;
-    ballEl.classList.remove('rolling', 'carried');
+    ballSkin.classList.remove('rolling');
+    ballEl.classList.remove('carried');
     chase = null;
   }
   setInterval(() => {
@@ -197,10 +206,10 @@ export function mountPlayground(env) {
   }
 
   // ---- tap tools (and keyboard use of every tool)
-  const useOn = (key, e) => {
-    if (tool.mode === 'tap') { apply(key); return; }
-    if (e && e.detail === 0) apply(key);        // Enter/Space on a focused friend: one scrub
-  };
+  // Keyboard and tap-tool route. A mouse press with a SCRUB tool never arrives here at all:
+  // the stage's pointerdown calls preventDefault(), which suppresses the compatibility click,
+  // so the tap fallback for those lives in endScrub() below.
+  const useOn = (key) => { apply(key); };
 
   // ---- scrub tools
   let scrub = null;
@@ -213,7 +222,7 @@ export function mountPlayground(env) {
     env.select(key);
     const m = env.motion.get(key);
     if (m) m.hold = true;
-    scrub = { key, id: e.pointerId, last: local(e), dist: 0, target: actor };
+    scrub = { key, id: e.pointerId, last: local(e), dist: 0, target: actor, applied: false };
     try { stage.setPointerCapture(e.pointerId); } catch { /* capture is a nicety */ }
     e.preventDefault();
   }));
@@ -228,13 +237,19 @@ export function mountPlayground(env) {
     if (under !== scrub.target) return;
     scrub.dist += Math.min(d, 60);          // a teleporting pointer cannot fake a long scrub
     if (tool.fx === 'bubble' && Math.random() < 0.3) spawn(x, y, 'bubble', 1);
-    if (scrub.dist >= SCRUB_PX) { scrub.dist -= SCRUB_PX; apply(scrub.key, [x, y]); }
+    if (scrub.dist >= SCRUB_PX) { scrub.dist -= SCRUB_PX; scrub.applied = true; apply(scrub.key, [x, y]); }
   }));
   const endScrub = (e) => {
     // pointer capture keeps the pointer "inside" the stage, so pointerleave alone never
     // fired and the tool cursor stayed painted after the player let go (stress shard)
     cursor.hidden = true;
     if (!scrub || (e && e.pointerId !== scrub.id)) return;
+    // A press that never travelled far enough is a TAP. It used to do nothing whatsoever:
+    // pointerdown calls preventDefault(), which suppresses the click that would have reached
+    // useOn(), so clicking a friend with Soap or Cloth produced no lather, no bubbles and no
+    // feedback of any kind — while the same tool worked by keyboard and by dragging. One tap
+    // is now the smallest unit of a scrub; holding and scrubbing still lathers faster.
+    if (!scrub.applied) apply(scrub.key, scrub.last);
     const m = env.motion.get(scrub.key);
     if (m) m.hold = false;
     scrub = null;

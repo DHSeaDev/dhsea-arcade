@@ -330,18 +330,21 @@ body.pg .pg-dock { display: flex; flex-wrap: wrap; justify-content: center; gap:
 .tool-count.empty { color: var(--warn); }
 
 /* the ball, and the water that comes off a friend shaking itself dry */
-.fx-ball { position: absolute; left: 0; top: 0; width: 22px; height: 22px; margin: -11px 0 0 -11px; border-radius: 50%; z-index: 62;
+.fx-ball { position: absolute; left: 0; top: 0; width: 22px; height: 22px; margin: -11px 0 0 -11px; border-radius: 50%; z-index: 62; }
+/* The paint lives on the skin so the spin is actually visible — the highlight orbits — while
+   the positioned parent keeps its transform to itself. */
+.fx-ball-skin { position: absolute; inset: 0; border-radius: 50%;
   background: radial-gradient(circle at 35% 30%, #fff6dc 0 18%, #f3c77a 45%, #c98a4a 100%); border: 1px solid #6b4424;
-  box-shadow: inset 0 -3px 0 rgba(0, 0, 0, .12); }
+  box-shadow: inset 0 -3px 0 rgba(0, 0, 0, .12); box-sizing: border-box; }
 .fx-ball[hidden] { display: none; }
-.fx-ball.rolling { animation: ball-roll .5s linear infinite; }
+.fx-ball-skin.rolling { animation: ball-roll .5s linear infinite; }
 .fx-ball.carried { width: 16px; height: 16px; margin: -8px 0 0 -8px; }
 @keyframes ball-roll { to { rotate: 360deg; } }
 .fx-drop { width: 7px; height: 9px; border-radius: 50% 50% 55% 55% / 60% 60% 45% 45%; background: radial-gradient(circle at 35% 30%, #fff 0 25%, #bfe8f6 60%, #7cc3e0 100%); }
 .fx-bubble { animation: fx-rise .9s ease-out forwards, fx-pop .28s steps(3) forwards .62s; }
 @keyframes fx-pop { 0% { opacity: 1; scale: 1; } 60% { opacity: .9; scale: 1.5; } 100% { opacity: 0; scale: .2; } }
-.reduce-motion .fx-ball.rolling { animation: none; }
-@media (prefers-reduced-motion: reduce) { .fx-ball.rolling, .fx-bubble { animation: none; } }
+.reduce-motion .fx-ball-skin.rolling { animation: none; }
+@media (prefers-reduced-motion: reduce) { .fx-ball-skin.rolling, .fx-bubble { animation: none; } }
 
 /* ---------- camp ticker (v1.2) ----------
    Moving text needs a way to stop it (WCAG 2.2.2): a pause button, a stop on hover and on

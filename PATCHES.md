@@ -515,3 +515,48 @@ only and the hint keeps row 3 to itself: row 3 is 0px hidden, 27px shown.
   open surface does open READ-ONLY behind the writer-lock banner, and `apply()` returns early
   on `readOnly`, so playing in the second surface would be silently discarded — the most
   plausible mechanism, but not confirmed as what happened.
+
+## 2026-09-18 (fourth pass) — the ball orbited the stage, and Soap ignored a click
+
+### The ball flew diagonally across the screen, on repeat
+
+`.fx-ball` is POSITIONED by its own `transform: translate(...)` and was ALSO given
+`rotate: 360deg` by `ball-roll`. The individual `rotate` property composes with that
+translate rather than spinning the ball in place, so the ball swept a circle whose radius is
+however far it had been thrown — across the stage and back, every 0.5s, forever.
+
+Measured on the live build with a control, because two earlier theories about this were wrong
+on reading (`ball-roll` animates `rotate`, not `transform`; `.pg-cursor` is already
+`pointer-events: none`):
+
+| state | x-span | y-span |
+|---|---|---|
+| `.rolling` on, as shipped | 1023px | 1027px |
+| `.rolling` removed | **0px** | **0px** |
+| `.rolling` re-added | 1244px | 1239px |
+
+The spin now lives on an inner `.fx-ball-skin`, which carries no positioning of its own, and
+the ball's paint moved there so the rotation is still visible as the highlight orbiting.
+After: **0px / 0px** position span with the skin still spinning (12 distinct `rotate` values
+sampled).
+
+### Soap and Cloth did nothing at all when you clicked a friend
+
+The scrub tools' `pointerdown` handler calls `e.preventDefault()`, which suppresses the
+compatibility `click` — so the actor's click listener, and therefore `useOn()`, never ran for
+a mouse press with Soap or Cloth. Dragging worked and the keyboard worked; a plain click
+produced no lather, no bubbles and no feedback whatsoever.
+
+A press that never travels far enough is now treated as one tap-sized scrub, applied in
+`endScrub()` where the pointer actually is. Measured on one mouse click with Soap:
+`clean` 70 -> 80, `sudsUntilMs` set, and **4 `fx-bubble` particles** spawned — against
+nothing at all before.
+
+Two harness faults were corrected on the way, both of which would have produced a false
+result: the first soap probe never actually selected Soap (it measured the previous tool and
+saw `fx-spark`), and an earlier "changed" predicate counted passive per-tick stat drift as a
+hit. The probe now asserts `aria-checked` on the tool before it measures anything.
+
+### Closed
+Progress persistence — Donnie confirms saves are working. The earlier read-only writer-lock
+suspicion is withdrawn, not proven.
