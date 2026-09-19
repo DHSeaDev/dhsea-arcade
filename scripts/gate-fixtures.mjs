@@ -1,5 +1,11 @@
 #!/usr/bin/env node
 // A gate that has only ever reported CLEAN is a claim, not evidence.
+// Lives at the repo root's scripts/, not inside src-games/creature-camp/.
+// scripts/build.mjs copies a game's whole folder into dist/, so gate scripts
+// parked beside the game were published to play.dhseadev.online (44 KB of .mjs
+// on the CDN) and dist-itch/ landed in the arcade's sitemap. Found by
+// scripts/preship.mjs, 2026-09-19, and confirmed by a control: removing
+// dist-itch/ took preship from 4 FAIL to 11/11 PASS.
 // Every gate in build-itch.mjs is run here against (a) a known-good input it
 // must pass and (b) a sabotaged input it must fail. Exit non-zero on any gate
 // that cannot tell the two apart.

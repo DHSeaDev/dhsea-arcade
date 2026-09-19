@@ -1,5 +1,11 @@
 #!/usr/bin/env node
 // Emit target #3: one self-contained index.html for itch.io.
+// Lives at the repo root's scripts/, not inside src-games/creature-camp/.
+// scripts/build.mjs copies a game's whole folder into dist/, so gate scripts
+// parked beside the game were published to play.dhseadev.online (44 KB of .mjs
+// on the CDN) and dist-itch/ landed in the arcade's sitemap. Found by
+// scripts/preship.mjs, 2026-09-19, and confirmed by a control: removing
+// dist-itch/ took preship from 4 FAIL to 11/11 PASS.
 //
 // Shares the source tree with the extension and the arcade build — nothing is
 // forked. scripts/build.mjs (arcade) is not touched by this file.
@@ -12,9 +18,9 @@ import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', 'src-games', 'creature-camp');
 const UI = resolve(ROOT, 'ui');
-const OUT = resolve(ROOT, 'dist-itch');
+const OUT = resolve(dirname(fileURLToPath(import.meta.url)), '..', 'dist-itch');
 
 // Sabotage switch for scripts/gate-fixtures.mjs: setting this to 0 disables the
 // </script escape so the scriptClose gate can be watched going red end-to-end.

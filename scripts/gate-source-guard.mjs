@@ -1,5 +1,11 @@
 #!/usr/bin/env node
 // Pre-push source gate for the itch emit target.
+// Lives at the repo root's scripts/, not inside src-games/creature-camp/.
+// scripts/build.mjs copies a game's whole folder into dist/, so gate scripts
+// parked beside the game were published to play.dhseadev.online (44 KB of .mjs
+// on the CDN) and dist-itch/ landed in the arcade's sitemap. Found by
+// scripts/preship.mjs, 2026-09-19, and confirmed by a control: removing
+// dist-itch/ took preship from 4 FAIL to 11/11 PASS.
 //
 // This lives in a .mjs file on purpose. The first version of these checks was
 // PowerShell embedded in a .cmd, and cmd.exe's DELAYED EXPANSION ate the `!`
@@ -13,7 +19,7 @@ import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 
-const GAME = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const GAME = resolve(dirname(fileURLToPath(import.meta.url)), '..', 'src-games', 'creature-camp');
 const EXPECT_SHA = 'e43659804b2f1bb4b911c33e344a9c01a8593746dd460fdfc21adb162ac3fc10';
 
 let bad = 0;
@@ -47,7 +53,7 @@ else fail('CONTROL: the scan is BLIND — it did not fire on a known-bad line, s
 
 // --- 3. the emitted artifact is the one the browser gates passed against ----
 try {
-  const buf = readFileSync(resolve(GAME, 'dist-itch/index.html'));
+  const buf = readFileSync(resolve(GAME, '..', '..', 'dist-itch/index.html'));
   const sha = createHash('sha256').update(buf).digest('hex');
   if (sha === EXPECT_SHA) ok(`dist-itch/index.html sha256 ${sha}`);
   else fail(`dist-itch/index.html sha256 ${sha}\n      expected            ${EXPECT_SHA}\n      This is not the file the browser, storage and a11y gates ran against.`);

@@ -1,8 +1,13 @@
 #!/usr/bin/env node
 // P5 — WCAG 2.2 AA pass over the EMITTED file plus a keyboard-only walk.
+// Lives at the repo root's scripts/, not inside src-games/creature-camp/.
+// scripts/build.mjs copies a game's whole folder into dist/, so gate scripts
+// parked beside the game were published to play.dhseadev.online (44 KB of .mjs
+// on the CDN) and dist-itch/ landed in the arcade's sitemap. Found by
+// scripts/preship.mjs, 2026-09-19, and confirmed by a control: removing
+// dist-itch/ took preship from 4 FAIL to 11/11 PASS.
 // axe-core finds what a validator can find; the keyboard walk is the part a
 // validator never reaches (focus order, trapped modal, reachable tools).
-import { chromium } from 'playwright';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { pathToFileURL } from 'node:url';
@@ -10,10 +15,21 @@ import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const require_ = createRequire(import.meta.url);
-const AXE = readFileSync(require_.resolve('axe-core/axe.min.js'), 'utf8');
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const URL_ = pathToFileURL(resolve(ROOT, 'dist-itch/index.html')).href;
+// axe-core is NOT a devDependency of this repo. A gate that cannot run must
+// report NOT RUN and exit non-zero — never exit 0, which would read as a pass.
+let AXE;
+try {
+  AXE = readFileSync(require_.resolve('axe-core/axe.min.js'), 'utf8');
+} catch {
+  console.log('A11Y GATE NOT RUN — axe-core is not installed.');
+  console.log('  npm i -D axe-core     then re-run this gate.');
+  console.log('  This is NOT a pass. Nothing was checked.');
+  process.exit(1);
+}
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', 'src-games', 'creature-camp');
+const URL_ = pathToFileURL(resolve(ROOT, '..', '..', 'dist-itch/index.html')).href;
 
+const { chromium } = await import('playwright');
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
 await page.addInitScript(() => { setInterval(() => { const m = document.getElementById('arrival'), o = document.getElementById('arrival-ok'); if (m && !m.hidden && o) o.click(); }, 200); });

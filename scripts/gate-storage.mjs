@@ -1,5 +1,11 @@
 #!/usr/bin/env node
 // P4 — the one thing the handoff said to MEASURE rather than assume.
+// Lives at the repo root's scripts/, not inside src-games/creature-camp/.
+// scripts/build.mjs copies a game's whole folder into dist/, so gate scripts
+// parked beside the game were published to play.dhseadev.online (44 KB of .mjs
+// on the CDN) and dist-itch/ landed in the arcade's sitemap. Found by
+// scripts/preship.mjs, 2026-09-19, and confirmed by a control: removing
+// dist-itch/ took preship from 4 FAIL to 11/11 PASS.
 //
 // vendor/storage.js detect(): chrome.storage.local -> localStorage -> in-memory.
 // In-memory means progress dies with the tab. itch.io serves a game in an
@@ -14,7 +20,7 @@ import { readFile } from 'node:fs/promises';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', 'src-games', 'creature-camp');
 const SAVE_KEY = 'creaturecamp_save_v1';
 
 // itch.io's own embed. Measured from itch's documented/observed iframe
@@ -34,7 +40,7 @@ const html = (sandbox) => `<!doctype html><title>host</title><style>html,body{ma
 <iframe id="f" src="/index.html"${sandbox === null ? '' : ` sandbox="${sandbox}"`}></iframe>`;
 
 async function main() {
-  const file = await readFile(resolve(ROOT, 'dist-itch/index.html'));
+  const file = await readFile(resolve(ROOT, '..', '..', 'dist-itch/index.html'));
   let sandboxNow = MATRIX[0][1];
   const server = createServer((req, res) => {
     if (req.url.startsWith('/index.html')) { res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' }); res.end(file); }

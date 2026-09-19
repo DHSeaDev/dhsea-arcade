@@ -1,5 +1,11 @@
 #!/usr/bin/env node
 // Refuses the commit if anything outside the allowlist is staged.
+// Lives at the repo root's scripts/, not inside src-games/creature-camp/.
+// scripts/build.mjs copies a game's whole folder into dist/, so gate scripts
+// parked beside the game were published to play.dhseadev.online (44 KB of .mjs
+// on the CDN) and dist-itch/ landed in the arcade's sitemap. Found by
+// scripts/preship.mjs, 2026-09-19, and confirmed by a control: removing
+// dist-itch/ took preship from 4 FAIL to 11/11 PASS.
 //
 // This repo is public and its own .gitignore records that one `git add -A`
 // would have published prismwar-owner-keys.zip and every unredeemed code. The
@@ -9,13 +15,13 @@ import { execFileSync } from 'node:child_process';
 const ALLOW = new Set([
   '.gitignore',
   'src-games/creature-camp/ui/app.js',
-  'src-games/creature-camp/scripts/build-itch.mjs',
-  'src-games/creature-camp/scripts/gate-fixtures.mjs',
-  'src-games/creature-camp/scripts/gate-browser.mjs',
-  'src-games/creature-camp/scripts/gate-storage.mjs',
-  'src-games/creature-camp/scripts/gate-a11y.mjs',
-  'src-games/creature-camp/scripts/gate-source-guard.mjs',
-  'src-games/creature-camp/scripts/gate-staged-paths.mjs',
+  'scripts/build-itch.mjs',
+  'scripts/gate-fixtures.mjs',
+  'scripts/gate-browser.mjs',
+  'scripts/gate-storage.mjs',
+  'scripts/gate-a11y.mjs',
+  'scripts/gate-source-guard.mjs',
+  'scripts/gate-staged-paths.mjs',
 ]);
 
 const staged = execFileSync('git', ['diff', '--cached', '--name-only'], { encoding: 'utf8' })

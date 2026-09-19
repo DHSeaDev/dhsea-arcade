@@ -1,5 +1,11 @@
 #!/usr/bin/env node
 // P3 — the emitted file, opened from file://, driven by a real browser.
+// Lives at the repo root's scripts/, not inside src-games/creature-camp/.
+// scripts/build.mjs copies a game's whole folder into dist/, so gate scripts
+// parked beside the game were published to play.dhseadev.online (44 KB of .mjs
+// on the CDN) and dist-itch/ landed in the arcade's sitemap. Found by
+// scripts/preship.mjs, 2026-09-19, and confirmed by a control: removing
+// dist-itch/ took preship from 4 FAIL to 11/11 PASS.
 // Discipline carried from the last session's instrument failures:
 //  * a known-good CONTROL runs first and must be seen to change;
 //  * tool state is asserted via aria-checked BEFORE anything downstream is measured;
@@ -9,8 +15,8 @@ import { pathToFileURL } from 'node:url';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const URL_ = pathToFileURL(resolve(ROOT, 'dist-itch/index.html')).href;
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', 'src-games', 'creature-camp');
+const URL_ = pathToFileURL(resolve(ROOT, '..', '..', 'dist-itch/index.html')).href;
 const SAVE_KEY = 'creaturecamp_save_v1';
 
 const results = [];
