@@ -34,7 +34,7 @@ import { GAME_INFO, mountGame, real } from './games.js';
 import { snapshotBlob, download, safeFileName } from './snapshot.js';
 import { TOOLS, mountPlayground, snackText } from './playground.js';
 
-const VERSION = chrome?.runtime?.getManifest?.().version ?? 'dev';
+const VERSION = globalThis.chrome?.runtime?.getManifest?.().version ?? 'dev';
 // panel | full | playground.
 // Off-extension (the arcade build at play.dhseadev.online) there is no side panel:
 // the page IS the window, so the whole app — playground tab included — has to be
