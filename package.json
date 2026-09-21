@@ -1,7 +1,7 @@
 {
   "name": "dhsea-arcade",
   "version": "1.0.0",
-  "description": "DHSeaDev Arcade \u2014 seven browser games on Cloudflare Pages",
+  "description": "DHSeaDev Arcade \u2014 browser games and apps on Cloudflare Pages; the list is scripts/entries.mjs",
   "scripts": {
     "build": "node scripts/build.mjs",
     "verify": "./scripts/verify-all.sh",

@@ -146,16 +146,14 @@ export const ENTRIES = [
     drop: ['sw.js', 'manifest.json'],
   },
   {
-    id: 'mosslight', site: 'https://dhseadev.itch.io/mosslight', name: 'Mosslight',
+    id: 'mosslight', site: 'https://dhseadev.online/projects/mosslight/', name: 'Mosslight',
     tagline: 'An idle healer who cannot attack. Keep the lane alive with six songs.',
     seoTitle: 'Mosslight \u2014 a free idle game where the healer cannot attack',
     seoDesc: 'Keep a line of befriended creatures standing with six songs and one mana pool. 3 regions, 24 roads, 12 friends. Saves in your browser; no account, no network.',
     genre: 'Simulation',
     dir: 'mosslight', entry: 'index.html',
-    /* Authored for the web, not ported, and the first entry whose write-up lives
-     * off-site: `site` is the itch.io page (live, re-read 2026-09-20) because no
-     * dhseadev.online project page exists yet. Repoint it when one does — it feeds
-     * the bar's About link and the JSON-LD sameAs.
+    /* Authored for the web, not ported. `site` is the project page (1648, live
+     * 2026-09-20); it feeds the bar's About link and the JSON-LD sameAs.
      *
      * The DEFAULT shim, deliberately. Mosslight calls no chrome.* API, but verify.mjs
      * holds every entry to the namespaced chrome.storage.local contract, so js/ui.js

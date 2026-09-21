@@ -1,9 +1,13 @@
 # DHSeaDev Arcade
 
-Seven browser games and one browser app, deployed as static files to Cloudflare Pages at
-**play.dhseadev.online**.
+Browser games and apps, deployed as static files to Cloudflare Pages at
+**play.dhseadev.online**. The list of what ships is `scripts/entries.mjs`, and every count
+(index, sitemap, `llms.txt`, JSON-LD) is derived from it, so no number is written here.
 
-Every game here started as a Chrome MV3 extension. None of them were rewritten.
+Most entries started as Chrome MV3 extensions and were not rewritten. Prismwar and
+Mosslight were written for the web. **To add one, follow
+[`docs/adding-an-entry.md`](docs/adding-an-entry.md)**, which is the whole process with
+the incident behind each rule.
 
 ---
 
@@ -16,7 +20,7 @@ the other two.
 **`shared/chrome-shim.js`** makes `chrome.storage.local` exist, backed by
 `localStorage` and namespaced per game. That is the entire compatibility layer.
 
-A survey of all eight sources found every non-storage `chrome.*` call —
+A survey of the eight original sources found every non-storage `chrome.*` call —
 `tabs.create`, `runtime.getURL`, `sidePanel.*`, `action.onClicked`,
 `runtime.onInstalled`, `windows.update`, `alarms` — lives **only** in launcher
 files (`popup.js`, `sw.js`, `background.js`) whose sole job was to open the game
@@ -76,7 +80,7 @@ npm run serve        # local preview on :8099
 | painted something real | a blank page has no errors either |
 | shim installed, and not a real extension context | proves the web path is what ran |
 | **write → reload → read back** | a write that lands in memory looks identical to one that lands in localStorage; only the round trip separates them |
-| keys are namespaced per game | eight entries share one origin |
+| keys are namespaced per game | every entry shares one origin |
 | arcade bar present | — |
 
 Plus two targeted suites: Bloom Rush's own persistence layer (round trip,
@@ -92,31 +96,35 @@ from our own origin is a defect.
 ## Security posture
 
 Strict CSP, and it is cheap here: a source audit found zero inline event
-handlers, zero `eval`, zero `new Function`, and zero Workers across all eight
-games — MV3 already forbade them, so the games were written without them. Bloom
+handlers, zero `eval`, zero `new Function`, and zero Workers across the eight
+original games — MV3 already forbade them, so the games were written without them. Bloom
 Rush's two inline `<script>` blocks were extracted to files so it needs no
 carve-out either.
 
-```
-script-src 'self'; object-src 'none'; base-uri 'self';
-form-action 'none'; frame-ancestors 'none';
-connect-src 'self' https://api.groq.com
-```
+The policy of record is `public/_headers`, and `verify.mjs` parses it from there so the
+two cannot drift; it is not copied here for the same reason. `connect-src` names each
+third-party host and the entry that needs it (Veilfall's optional Tier 2 and Planet Express
+Lounge, both with the **player's own key**), so a future dependency cannot quietly add
+one.
 
-`api.groq.com` is named because Veilfall's optional Tier 2 posts to it with the
-**player's own key**. It is the only egress destination any game has, and
-pinning it means a future dependency cannot quietly add one. The gate proves the
+An entry may also carry its own meta CSP, and **the browser enforces both**: the
+effective policy is the intersection. That can remove everything (an inline-script policy
+intersected with `script-src 'self'` allows no script at all) or narrow what the header
+allows (Mosslight's meta keeps `connect-src 'none'`). See `docs/adding-an-entry.md` §5. The gate proves the
 pin holds by attempting an exfiltration fetch to another host and asserting it
 is blocked.
 
 **One posture change worth knowing.** In the extension the Groq key lived in
 extension-private storage. Here it lives in `localStorage` on an origin shared
-with six other games, so any page on this site can read it. That is disclosed to
+with every other entry, so any page on this site can read it. That is disclosed to
 the player in Veilfall's settings rather than left implicit.
 
 ---
 
 ## Deploying
+
+**Today a push to `main` is the deploy** (Pages is Git-connected, automatic deployments on).
+The steps below are how the project was first set up.
 
 1. Push this repo to GitHub.
 2. Cloudflare Pages → **Create a project** → **Connect to Git** → pick the repo.
@@ -130,19 +138,16 @@ configuration for either.
 
 ---
 
-## Adding a game
+## Adding a game or app
 
-Add its source under `src-games/<id>/`, then one row in the `GAMES` table in
-`scripts/build.mjs`: `id`, display `name`, `tagline`, `entry` (the document that
-*is* the game — never the popup), and `drop` (its launcher layer).
-
-The arcade index and `sitemap.xml` are both generated from that table, so a game
-cannot be shipped-but-unlisted or listed-but-shipped-nowhere. Then run
-`npm run verify`.
+Follow [`docs/adding-an-entry.md`](docs/adding-an-entry.md). In one line: a folder under
+`src-games/<id>/` holding only served files, one row in `scripts/entries.mjs`, then
+`bash scripts/verify-all.sh`. Every gate derives its list from that table, so a row cannot
+be shipped untested, and there are no per-entry exemptions.
 
 ## Links back to dhseadev.online (added 2026-09-01)
 
-Every entry row in `scripts/build.mjs` carries a required `site` — its showcase page on
+Every entry row in `scripts/entries.mjs` carries a required `site` — its showcase page on
 dhseadev.online. The build refuses a row without one. It is used three ways:
 
 - the game's JSON-LD carries `sameAs: [site]`, tying the arcade node to the write-up;
