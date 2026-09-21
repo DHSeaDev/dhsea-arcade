@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en" data-theme="heather">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'none'; connect-src 'none'; font-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>Mosslight — a healer idle</title>
+<meta name="description" content="An idle game where you cannot fight. Befriend the creatures of the Hollow, keep them standing, and send the raiders home.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%235b4cc4'/%3E%3Cpath d='M11 9h10l-2 15h-6z' fill='%23ffd76a' stroke='%232a2005' stroke-width='2' stroke-linejoin='round'/%3E%3Cellipse cx='16' cy='17' rx='2' ry='3.5' fill='%23fffbe6'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="banner" role="alert" hidden></div>
+<div id="app">
+  <header id="top" aria-label="Resources"></header>
+  <nav id="nav" role="tablist" aria-label="Game sections" aria-orientation="vertical"></nav>
+  <main id="panel" role="tabpanel" tabindex="-1"></main>
+  <section id="stage" aria-label="Battlefield">
+    <div id="stagehead"></div>
+    <div id="fieldwrap"><canvas id="field" width="640" height="360" role="img" aria-label="The lane: your friends on the left hold the line against raiders arriving from the right. Click a friend to focus your healing on it. Move the pointer over drops to gather them."></canvas><div id="result" hidden></div></div>
+    <div id="manabar"><span id="manatext">Mana</span><div class="bar"><i id="manafill" style="width:0"></i></div></div>
+    <div id="skillbar" role="toolbar" aria-label="Songs. Press 1 to 5 to cast."></div>
+    <div id="lineinfo" aria-label="The line and the current wave, as text"></div>
+  </section>
+</div>
+<div id="toasts" aria-label="Notices"></div>
+<div id="modal" hidden></div>
+<div id="live" class="sr" role="status" aria-live="polite"></div>
+<noscript><p style="padding:24px;">Mosslight needs JavaScript to run.</p></noscript>
+<script src="js/data.js" data-part="data"></script>
+<script src="js/engine.js" data-part="engine"></script>
+<script src="js/art.js" data-part="art"></script>
+<script src="js/audio.js" data-part="audio"></script>
+<script src="js/ui.js" data-part="ui"></script>
+</body>
+</html>

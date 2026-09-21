@@ -145,6 +145,30 @@ export const ENTRIES = [
      * viewport and worded <h1>; zero inline handlers. */
     drop: ['sw.js', 'manifest.json'],
   },
+  {
+    id: 'mosslight', site: 'https://dhseadev.itch.io/mosslight', name: 'Mosslight',
+    tagline: 'An idle healer who cannot attack. Keep the lane alive with six songs.',
+    seoTitle: 'Mosslight \u2014 a free idle game where the healer cannot attack',
+    seoDesc: 'Keep a line of befriended creatures standing with six songs and one mana pool. 3 regions, 24 roads, 12 friends. Saves in your browser; no account, no network.',
+    genre: 'Simulation',
+    dir: 'mosslight', entry: 'index.html',
+    /* Authored for the web, not ported, and the first entry whose write-up lives
+     * off-site: `site` is the itch.io page (live, re-read 2026-09-20) because no
+     * dhseadev.online project page exists yet. Repoint it when one does — it feeds
+     * the bar's About link and the JSON-LD sameAs.
+     *
+     * The DEFAULT shim, deliberately. Mosslight calls no chrome.* API, but verify.mjs
+     * holds every entry to the namespaced chrome.storage.local contract, so js/ui.js
+     * routes its four keys through chrome.storage.local when it exists (hydrated
+     * before boot, written through) and through localStorage directly elsewhere.
+     *
+     * One source tree, two emit targets: this folder is served as-is under
+     * script-src 'self'; scripts/build-itch-mosslight.mjs inverts the three
+     * arcade-only differences into the single itch file. The folder holds ONLY
+     * served files, so there is nothing to drop — keep build and test scripts out
+     * of it (build.mjs copies the whole directory to the CDN). */
+    drop: [],
+  },
 ];
 
 /* Derived views. Every downstream consumer reads one of these, never ENTRIES

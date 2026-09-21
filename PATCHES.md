@@ -560,3 +560,65 @@ hit. The probe now asserts `aria-checked` on the tool before it measures anythin
 ### Closed
 Progress persistence — Donnie confirms saves are working. The earlier read-only writer-lock
 suspicion is withdrawn, not proven.
+
+## 2026-09-20 — Mosslight seated as entry #11 (the 10th game)
+
+Mosslight is authored for the web, not ported from an extension, and until now its only
+build was a single self-contained file for itch.io (0.3.0, live at
+https://dhseadev.itch.io/mosslight). `src-games/mosslight/` is now its one source tree.
+
+### Why the itch file could not simply be copied in
+
+The itch file carries a meta CSP of `script-src 'unsafe-inline'`. This origin's header is
+`script-src 'self'`. A browser enforces **both**, and `'unsafe-inline'` ∩ `'self'` permits
+neither an inline script nor an external one: the page would have rendered as an empty shell
+with every one of its five scripts blocked. `verify.mjs` would have caught it at boot — it
+serves the CSP parsed from `public/_headers` — but the fix had to come first.
+
+The served folder therefore holds the source as separate files (`index.html`, `style.css`,
+`js/{data,engine,art,audio,ui}.js`) under a page CSP of `script-src 'self'` that still keeps
+`connect-src 'none'`. The header allows five hosts for other entries; intersection takes the
+stricter value, so the listing's "no network calls" claim holds on this origin too.
+
+`scripts/build-itch-mosslight.mjs` inverts the three arcade-only differences to emit the itch
+file. **Equivalence was proven, not asserted:** before `ui.js` changed, its output was
+byte-identical to the shipped 0.3.0 file (sha256 `c73af6eb4c2832c8`), and `--expect=<sha>`
+fails on a mismatch (checked with a deliberately wrong sha).
+
+### The one source change: storage
+
+`verify.mjs` holds every entry to the namespaced `chrome.storage.local` contract and there is
+no exemption — by design. Mosslight used `localStorage` directly with bare keys
+(`mosslight.save.v1`, `…:slot1..3`), which fails `shim`, `saves` and `ns`, and a bare key is
+exactly the collision the namespace exists to prevent on a shared origin.
+
+`js/ui.js` now routes its four keys through a small adapter: when `chrome.storage.local`
+exists it is read into a cache **before** `UI.boot` and every write goes through; without it
+(itch, a local file) the code path is the 0.3.0 one. The key list is derived from a single
+`SLOTS` constant that the Settings panel also renders from.
+
+### Found by a three-reviewer panel after every gate was green
+
+- **BLOCKER:** the first draft hydrated slots 0–2; the UI offers 1–3. Slot 3 read as empty
+  after every reload on the arcade. The persistence gate tested slot 1 only, so it passed.
+  The gate now reads the slot list from the page and asserts every slot survives a reload;
+  pointed at the draft it goes red on exactly that one check.
+- The hydrate `try` wrapped the boot callback, so any boot-time error was swallowed silently
+  (the shim calls back synchronously). Boot now runs outside it.
+- A failed read booted a fresh game that would then save over the real one. A failed read now
+  refuses writes for the session and shows the cannot-save banner.
+- In degraded (session-only) storage a slot write reported failure but the slot rendered as
+  filled. The cache is now updated only after a durable write.
+- The gate's boot check could never print FAIL — a broken boot crashed the script first.
+  It now reports boot as a status and names the page error.
+
+### Gates
+
+New `scripts/verify-mosslight-save.mjs` (15 checks, production CSP): namespaced live save and
+every slot, survives reload, sibling namespace untouched, a valid bare itch-era save **not**
+adopted, boots and shows the banner with storage denied. Negative controls: the 0.3.0 `ui.js`
+fails 5 checks; the slots-0–2 draft fails 1; a throwing `UI.boot` fails 7 with the error
+named.
+
+`site` points at the itch page because no dhseadev.online project page exists yet. Repoint it
+when one does.
