@@ -189,3 +189,23 @@ export const pathOf = (e) => {
  *  em-dash, because several entries carry a subtitle the heading does not repeat.
  *  An entry whose heading genuinely differs sets h1Expect explicitly. */
 export const h1Of = (e) => e.h1Expect ?? e.name.split('\u2014')[0].trim();
+
+/**
+ * LINKED — games that live on their OWN origin and are only linked from here.
+ * Deliberately NOT in ENTRIES: nothing is built, copied, shimmed, rated, or put
+ * in sitemap.xml for them, so verify/stress/seo-heading gates (which derive from
+ * ENTRIES) are untouched, and the arcade CSP is not widened for them.
+ * Why separate: Spirebound has optional Firebase cloud save, so its refresh
+ * token sits in localStorage; on this shared origin it would sit beside the
+ * visitors' LLM keys. Own origin = own storage, own CSP.
+ * `url` is the live origin; scripts/verify-linked.mjs asserts the card, the
+ * llms.txt line and the absence from sitemap/ENTRIES.
+ */
+export const LINKED = [
+  {
+    id: 'spirebound', url: 'https://spirebound.dhseadev.online/',
+    site: 'https://dhseadev.online/projects/spirebound/', name: 'Spirebound',
+    tagline: 'An idle tower RPG. Climb, ascend, summon gods. Optional cloud save.',
+    seoDesc: 'A free idle tower RPG with ascension, companions, expeditions and a pantheon. Plays offline, saves on your device; optional email cloud save. Runs on its own site.',
+  },
+];

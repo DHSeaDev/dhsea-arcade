@@ -243,7 +243,9 @@ const rel = (f) => path.relative(OUT, f).split(path.sep).join('/');
   if (missing.length) missing.forEach(m => F(`missing top-level asset: ${m}`));
   else {
     const llms = await readFile(path.join(OUT, 'llms.txt'), 'utf8');
-    const listed = (llms.match(/^- \[/gm) || []).length;
+    /* Count only this origin's entries: LINKED rows live on other origins and are
+     * deliberately absent from the sitemap. */
+    const listed = (llms.match(/^- \[[^\]]*\]\(https:\/\/play\.dhseadev\.online\//gm) || []).length;
     const inSitemap = ((await readFile(path.join(OUT, 'sitemap.xml'), 'utf8')).match(/<loc>/g) || []).length - 1;
     /* "entries", not "games" — the arcade ships apps too, and a message that
      * calls both games would misreport the one number this check exists to

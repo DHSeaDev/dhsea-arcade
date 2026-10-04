@@ -21,7 +21,7 @@ const ORIGIN = 'https://play.dhseadev.online';
 const SRC = path.join(ROOT, 'src-games');
 const OUT = path.join(ROOT, 'dist');
 
-import { ENTRIES, GAMES, APPS } from './entries.mjs';
+import { ENTRIES, GAMES, APPS, LINKED } from './entries.mjs';
 
 /** Files/dirs never shipped, whatever a game row says. */
 const ALWAYS_DROP = new Set(['manifest.json', 'store', 'Assetts', '.git', 'node_modules']);
@@ -311,15 +311,27 @@ ${[1, 2, 3, 4, 5].map(n => `            <button class="g-star" type="button" ari
         <a class="g-go" href="${urlOf(g.id)}">${g.type === 'app' ? 'OPEN' : 'PLAY'} <span aria-hidden="true">&rarr;</span></a>
       </article>`;
 
+const linkedCard = (g) => `      <article class="g-card">
+        <span class="g-name">${g.name}</span>
+        <span class="g-tag">${g.tagline}</span>
+        <div class="g-links">
+          <a class="g-go" href="${g.url}" rel="noopener" aria-label="Play ${g.name} (opens its own site)">PLAY <span aria-hidden="true">&rarr;</span></a>
+          <a class="g-go g-about" href="${g.site}?utm_source=arcade&amp;utm_medium=promo" aria-label="About ${g.name}">ABOUT</a>
+        </div>
+      </article>`;
+
 const indexHtml = (await readFile(path.join(ROOT, 'shared', 'index.template.html'), 'utf8'))
   .replace('<!--CARDS-->', GAMES.map(card).join('\n'))
   .replace('<!--APPS-->', APPS.map(card).join('\n'))
+  .replace('<!--LINKED-->', LINKED.map(linkedCard).join('\n'))
   .replace(/<!--COUNT-->/g, String(GAMES.length))
   .replace(/<!--APPCOUNT-->/g, String(APPS.length))
   /* The apps section is removed entirely when there are none, rather than
    * shipping an empty heading with a "0 apps" label under it. */
   .replace(/<!--APPS_SECTION_START-->([\s\S]*?)<!--APPS_SECTION_END-->/,
-           APPS.length ? '$1' : '');
+           APPS.length ? '$1' : '')
+  .replace(/<!--LINKED_SECTION_START-->([\s\S]*?)<!--LINKED_SECTION_END-->/,
+           LINKED.length ? '$1' : '');
 await writeFile(path.join(OUT, 'index.html'), indexHtml);
 
 /* Bundle playhtml locally. Loading it from unpkg would mean allowing a
@@ -396,6 +408,14 @@ await cp(path.join(ROOT, 'public'), OUT, { recursive: true });
       '> Not games. Same origin, same rules, different shape.',
       '',
       ...APPS.map(g => '- [' + g.name + '](' + ORIGIN + '/' + urlOf(g.id) + '): ' + g.seoDesc),
+      '',
+    ] : []),
+    ...(LINKED.length ? [
+      '## Hosted on their own site',
+      '',
+      '> Not part of this origin: separate site, separate storage. Linked only.',
+      '',
+      ...LINKED.map(g => '- [' + g.name + '](' + g.url + '): ' + g.seoDesc),
       '',
     ] : []),
     '## Facts',
