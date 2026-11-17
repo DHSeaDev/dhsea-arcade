@@ -105,7 +105,21 @@ function seoHead(game, url) {
   ].join('\n');
 }
 
+/* An entry authored for the web may carry its own <meta> Content-Security-Policy (Prismwar, Mosslight).
+ * A meta policy INTERSECTS with the header policy, so their img-src would block the visit-counter
+ * beacon even though the header allows it. Widen only img-src, only by pixel.wp.com, only in the
+ * built copy — the source files and the itch.io builds are left exactly as authored. A meta policy
+ * with no img-src would fall back to default-src and block it silently, so that throws instead. */
+function allowStatsBeacon(html, game) {
+  return html.replace(/(<meta\s+http-equiv=["']Content-Security-Policy["']\s+content=")([^"]*)(")/i, (m, a, c, b) => {
+    if (c.includes('pixel.wp.com')) return m;
+    if (!/(^|;\s*)img-src\s/.test(c)) throw new Error(`${game.id}: meta CSP has no img-src; the visit counter would be blocked silently`);
+    return a + c.replace(/(img-src\s[^;]*)/, '$1 https://pixel.wp.com') + b;
+  });
+}
+
 function injectShim(html, game, depth, url) {
+  html = allowStatsBeacon(html, game);
   const up = '../'.repeat(depth);
   /* Shims default to the shared arcade one. An entry that names its own gets
    * ONLY its own — never both. Two shims racing for the same chrome.* property
@@ -116,7 +130,8 @@ function injectShim(html, game, depth, url) {
   ).join('\n');
   const icon = `<link rel="icon" href="${up}favicon.svg" type="image/svg+xml">`;
   const backbar = icon + `\n<link rel="stylesheet" href="${up}shared/arcade-bar.css">\n` +
-                  `<script src="${up}shared/arcade-bar.js" defer data-game-name="${game.name.replace(/"/g, '&quot;')}" data-about-url="${siteOf(game)}?utm_source=arcade&amp;utm_medium=bar"></script>`;
+                  `<script src="${up}shared/arcade-bar.js" defer data-game-name="${game.name.replace(/"/g, '&quot;')}" data-about-url="${siteOf(game)}?utm_source=arcade&amp;utm_medium=bar"></script>\n` +
+                  `<script src="${up}shared/stats.js" defer></script>`;
 
   /* An extension panel has a fixed viewport, so three of these games never
    * needed <meta viewport> and never had one. On the web its absence means a

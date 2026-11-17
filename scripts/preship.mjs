@@ -174,6 +174,7 @@ const rel = (f) => path.relative(OUT, f).split(path.sep).join('/');
       'https://api.elevenlabs.io',                 // Planet Express, optional premium TTS
       'https://api.playhtml.fun',                  // arcade play counts + ratings
       'wss://api.playhtml.fun',                    // the same, socket transport
+      'https://pixel.wp.com',                      // img-src only: visit-counter beacon (shared/stats.js), no script host
     ]);
     const unexpected = hosts.filter(x => !allowed.has(x));
     if (unexpected.length) F(`CSP: unexpected third-party host(s): ${unexpected.join(', ')}`);

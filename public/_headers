@@ -13,6 +13,9 @@
 #   openrouter.ai                      Planet Express Lounge, alternate provider
 #   generativelanguage.googleapis.com  Planet Express Lounge, Gemini provider
 #   api.elevenlabs.io                  Planet Express Lounge, optional premium TTS
+#   pixel.wp.com                       img-src ONLY: the visit-counter beacon (shared/stats.js) is
+#                                      a first-party script sending one image request, so no third-
+#                                      party host ever gets script execution on this origin
 #   api.playhtml.fun                   the sync socket behind the arcade's shared
 #                                      play counts and star ratings (playhtml is
 #                                      BUNDLED from npm, not loaded from a CDN, so
@@ -33,7 +36,7 @@
 #      the worst case is a visitor losing their own key, which is why the app
 #      says so at the point of entry rather than in a policy page.
 /*
-  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self' https://api.groq.com https://openrouter.ai https://generativelanguage.googleapis.com https://api.elevenlabs.io https://api.playhtml.fun wss://api.playhtml.fun; object-src 'none'; base-uri 'self'; form-action 'none'; frame-ancestors 'none'
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://pixel.wp.com; media-src 'self' data: blob:; connect-src 'self' https://api.groq.com https://openrouter.ai https://generativelanguage.googleapis.com https://api.elevenlabs.io https://api.playhtml.fun wss://api.playhtml.fun; object-src 'none'; base-uri 'self'; form-action 'none'; frame-ancestors 'none'
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=(), interest-cohort=()
