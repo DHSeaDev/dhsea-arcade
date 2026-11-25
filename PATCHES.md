@@ -622,3 +622,16 @@ named.
 
 `site` points at the itch page because no dhseadev.online project page exists yet. Repoint it
 when one does.
+
+## annoying-dino embed — 2.5.0 plus a particle-canvas fix (2026-11-24)
+`public/embed/annoying-dino/dino.js` is the 2.5.0 package's `dino.js` with two edits in the
+`Particles` class. Reproduced with the real 2.5.0 code at 602x1067, browser zoom 90%: the ember
+canvas smeared a band of trails across the bottom of the viewport during a volcano eruption.
+
+- `resize()` now recomputes `this.dpr` from `devicePixelRatio`; it was fixed at construction, so
+  zooming the page afterwards left a stale ratio.
+- `draw()` clears with an identity transform, then restores the dpr transform. Before, `clearRect`
+  ran in dpr-scaled space, so at dpr < 1 it wiped only dpr squared of the canvas.
+
+Measured: orange pixels in the bottom strip at dpr 0.9 went from 12219 to 0, and at dpr 1 the
+behaviour is unchanged. Remove this note when the store build carries the same fix.
